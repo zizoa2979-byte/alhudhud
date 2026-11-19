@@ -1,0 +1,130 @@
+<script>
+  let products = [];
+  const cart = {};
+
+  function renderProducts() {
+    const box = document.getElementById("productsList");
+    if (!box) return;
+
+    if (!Array.isArray(products) || products.length === 0) {
+      box.innerHTML = '<div style="padding:12px;color:#64748b;">لا توجد منتجات متاحة حالياً. أضف عناصر من صفحة الإدارة.</div>';
+      return;
+    }
+
+    box.innerHTML = products.map(p => `
+      <div class="item">
+        <div>
+          <div class="store-tag">${p.store}</div>
+          <div style="font-weight: bold; margin: 4px 0;">${p.name}</div>
+          <div class="price">${p.price} ج.م</div>
+          <button type="button" onclick="addToCart(${p.id})">أضف للسلة</button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function addToCart(id) {
+    cart[id] = (cart[id] || 0) + 1;
+    renderCart();
+  }
+
+  function changeQty(id, delta) {
+    if (!cart[id]) return;
+    cart[id] += delta;
+    if (cart[id] <= 0) delete cart[id];
+    renderCart();
+  }
+
+  function renderCart() {
+    const cartBox = document.getElementById("cartItems");
+    const totalBox = document.getElementById("totalText");
+    const zoneSelect = document.getElementById("zoneSelect");
+    if (!cartBox) return;
+
+    const ids = Object.keys(cart);
+    let subtotal = 0;
+
+    if (ids.length === 0) {
+      cartBox.innerHTML = "السلة فارغة حالياً.";
+      if (totalBox) totalBox.textContent = "الإجمالي: 0 ج.م";
+      return;
+    }
+
+    cartBox.innerHTML = ids.map(id => {
+      const item = products.find(p => p.id === Number(id));
+      if (!item) return "";
+      const qty = cart[id];
+      const lineTotal = item.price * qty;
+      subtotal += lineTotal;
+      return `
+        <div class="cart-row" style="display:flex;justify-content:space-between;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #e2e8f0;">
+          <span>${item.name} × ${qty}</span>
+          <span style="display:flex;align-items:center;gap:4px;">
+            <button type="button" onclick="changeQty(${item.id}, -1)">-</button>
+            <button type="button" onclick="changeQty(${item.id}, 1)">+</button>
+            <strong>${lineTotal} ج.م</strong>
+          </span>
+        </div>
+      `;
+    }).join("");
+
+    const delivery = zoneSelect ? Number(zoneSelect.value || 0) : 0;
+    const total = subtotal + delivery;
+    if (totalBox) {
+      totalBox.textContent = `الإجمالي: ${total} ج.م (المنتجات: ${subtotal} ج.م + التوصيل: ${delivery} ج.م)`;
+    }
+  }
+
+  function placeDemoOrder() {
+    const msgBox = document.getElementById("orderMsg");
+    const phoneInput = document.getElementById("customerPhone");
+    const zoneSelect = document.getElementById("zoneSelect");
+    const ids = Object.keys(cart);
+
+    if (ids.length === 0) {
+      if (msgBox) msgBox.textContent = "أضف منتجاً واحداً على الأقل قبل تأكيد الطلب.";
+      return;
+    }
+
+    const phone = phoneInput ? phoneInput.value.trim() : "";
+    if (!phone) {
+      if (msgBox) msgBox.textContent = "من فضلك أدخل رقم الهاتف للتأكيد.";
+      return;
+    }
+
+    const delivery = zoneSelect ? Number(zoneSelect.value || 0) : 0;
+    const zoneName = zoneSelect && zoneSelect.options[zoneSelect.selectedIndex]
+      ? zoneSelect.options[zoneSelect.selectedIndex].textContent.trim()
+      : "";
+
+    let subtotal = 0;
+    const itemsText = ids.map(id => {
+      const item = products.find(p => p.id === Number(id));
+      if (!item) return "";
+      const qty = cart[id];
+      subtotal += item.price * qty;
+      return `• ${item.name} (${qty}x) = ${item.price * qty} ج.م`;
+    }).filter(Boolean).join("%0A");
+
+    const total = subtotal + delivery;
+    if (msgBox) {
+      msgBox.textContent = `تم تجهيز الطلب (${zoneName}) بإجمالي ${total} ج.م وجارٍ فتح واتساب...`;
+    }
+
+    const msg = `*طلب جديد - الهدهد*%0Aالهاتف: ${encodeURIComponent(phone)}%0Aالمنطقة: ${encodeURIComponent(zoneName)}%0A%0A${itemsText}%0A%0Aالمنتجات: ${subtotal} ج.م%0Aالتوصيل: ${delivery} ج.م%0A*الإجمالي: ${total} ج.م*`;
+    window.open(`https://wa.me/201070626007?text=${msg}`, "_blank");
+  }
+
+  async function initStore() {
+    try {
+      const res = await fetch("/api/products");
+      products = await res.json();
+    } catch (err) {
+      products = [];
+    }
+    renderProducts();
+    renderCart();
+  }
+
+  initStore();
+</script>
