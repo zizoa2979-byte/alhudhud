@@ -384,6 +384,15 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     .tab-pane { display: none; }
     .tab-pane.active { display: block; }
     .setting-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+
+    /* مربع تأكيد الإضافة للسلة في منتصف الشاشة */
+    .cart-toast-backdrop { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 90; pointer-events: none; padding: 16px; }
+    .cart-toast-backdrop.show { display: flex; }
+    .cart-toast-box { background: rgba(15, 23, 42, 0.94); color: #ffffff; border-radius: 16px; padding: 18px 22px; min-width: 210px; max-width: 300px; text-align: center; box-shadow: 0 12px 32px rgba(15, 23, 42, 0.28); transform: scale(0.85); opacity: 0; transition: transform 0.2s ease, opacity 0.2s ease; }
+    .cart-toast-backdrop.show .cart-toast-box { transform: scale(1); opacity: 1; }
+    .check-circle { width: 52px; height: 52px; border-radius: 999px; background: #16a34a; color: #ffffff; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 28px; font-weight: bold; box-shadow: 0 0 0 6px rgba(22, 163, 74, 0.22); }
+    .cart-toast-title { font-size: 14px; font-weight: bold; }
+    .cart-toast-sub { font-size: 12px; color: #cbd5e1; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -398,6 +407,14 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       <a href="/admin">لوحة الإدارة</a>
     </div>
   </header>
+
+  <div id="cartToast" class="cart-toast-backdrop" aria-live="polite">
+    <div class="cart-toast-box">
+      <div class="check-circle">&#10003;</div>
+      <div id="cartToastTitle" class="cart-toast-title">تمت الإضافة للسلة</div>
+      <div id="cartToastSub" class="cart-toast-sub"></div>
+    </div>
+  </div>
 
   <div class="promo-banner">
     <div id="promoBox" class="promo-box">
@@ -565,7 +582,21 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     let promoInfo = { enabled: true, discount: 35, label: "عرض أول طلب مجاناً" };
     let lastOtpWaUrl = "";
     let lastWaUrl = "";
+    let toastTimer = null;
     const cart = {};
+
+    function showAddedToast(itemName, qtyInCart) {
+      const backdrop = document.getElementById("cartToast");
+      const title = document.getElementById("cartToastTitle");
+      const sub = document.getElementById("cartToastSub");
+      title.textContent = "تمت الإضافة للسلة";
+      sub.textContent = itemName ? `${itemName} (العدد في السلة: ${qtyInCart})` : `العدد في السلة: ${qtyInCart}`;
+      backdrop.classList.add("show");
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        backdrop.classList.remove("show");
+      }, 1150);
+    }
 
     function switchTab(tabName) {
       ["store", "cart", "orders", "account", "settings"].forEach(name => {
@@ -715,7 +746,9 @@ CUSTOMER_HTML = """<!DOCTYPE html>
 
     function addToCart(id) {
       cart[id] = (cart[id] || 0) + 1;
-      renderCart();
+      updateCartBadge();
+      const prod = products.find(p => Number(p.id) === Number(id));
+      showAddedToast(prod ? prod.name : "", cart[id]);
     }
 
     function changeQty(id, delta) {
