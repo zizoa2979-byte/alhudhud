@@ -333,7 +333,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     .card { background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 14px; }
     h2 { margin: 0 0 12px; font-size: 17px; color: #0f766e; }
     .rest-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; }
-    .rest-chip { min-width: 175px; border: 1px solid #cbd5e1; border-radius: 10px; padding: 8px; background: #f8fafc; cursor: pointer; display: flex; gap: 8px; align-items: center; text-align: right; }
+    .rest-chip { min-width: 175px; border: 1px solid #cbd5e1; border-radius: 10px; padding: 8px; background: #f8fafc; color: #0f172a; cursor: pointer; display: flex; gap: 8px; align-items: center; text-align: right; }
     .rest-chip.active { border-color: #0d9488; background: #f0fdfa; box-shadow: 0 0 0 2px rgba(13,148,136,0.15); }
     .rest-chip img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
     .grid-prods { display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 10px; }
@@ -348,7 +348,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     .btn-blue { background: #0284c7; color: #fff; }
     .btn-sm { padding: 4px 8px; font-size: 12px; background: #e2e8f0; color: #0f172a; }
     label { display: block; font-size: 12px; font-weight: bold; margin: 8px 0 4px; }
-    input, select { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; background: #fff; }
+    input, select { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; background: #fff; color: #0f172a; }
     .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; gap: 6px; }
     .total-box { margin-top: 10px; padding-top: 10px; border-top: 2px solid #e2e8f0; font-size: 14px; font-weight: bold; }
     .alert { margin-top: 8px; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; }
@@ -384,7 +384,6 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- 1. المتجر -->
   <div id="pane-store" class="tab-pane active">
     <div class="container">
       <div class="card">
@@ -406,7 +405,6 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- 2. السلة وتحديد البلد -->
   <div id="pane-cart" class="tab-pane">
     <div class="container">
       <div class="card">
@@ -433,7 +431,6 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- 3. طلباتي -->
   <div id="pane-orders" class="tab-pane">
     <div class="container">
       <div class="card">
@@ -447,7 +444,6 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- 4. الحساب -->
   <div id="pane-account" class="tab-pane">
     <div class="container">
       <div class="card">
@@ -480,7 +476,6 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- 5. الإعدادات -->
   <div id="pane-settings" class="tab-pane">
     <div class="container">
       <div class="card">
@@ -948,37 +943,37 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
   <title>بوابة المطاعم | الهدهد</title>
   <style>
     * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
-    body { margin: 0; background: #f1f5f9; color: #0f172a; }
-    header { background: #0f766e; color: #fff; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-    header h1 { margin: 0; font-size: 19px; }
-    header a { color: #fff; background: #115e59; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; }
+    body { margin: 0; background: #f1f5f9 !important; color: #0f172a !important; }
+    header { background: #0f766e !important; color: #fff !important; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    header h1 { margin: 0; font-size: 19px; color: #fff !important; }
+    header a { color: #fff !important; background: #115e59 !important; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; }
     .wrap { max-width: 980px; margin: 18px auto; padding: 0 12px; }
-    .card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 16px; }
-    h2 { margin: 0 0 10px; font-size: 17px; color: #0f766e; }
-    label { display: block; font-size: 12px; font-weight: bold; margin: 10px 0 4px; }
-    input, select { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; background: #fff; }
+    .card { background: #ffffff !important; color: #0f172a !important; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; border: 1px solid #cbd5e1; }
+    h2 { margin: 0 0 10px; font-size: 17px; color: #0f766e !important; }
+    label { display: block; font-size: 12px; font-weight: bold; margin: 10px 0 4px; color: #0f172a !important; }
+    input, select { width: 100%; padding: 9px 10px; border: 1px solid #94a3b8; border-radius: 8px; font-size: 13px; background: #ffffff !important; color: #0f172a !important; }
     .row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media (max-width: 720px) { .row-grid { grid-template-columns: 1fr; } }
-    button { border: none; border-radius: 8px; padding: 9px 14px; cursor: pointer; font-weight: bold; font-size: 13px; }
-    .btn-teal { background: #0d9488; color: #fff; }
-    .btn-blue { background: #0284c7; color: #fff; }
-    .btn-red { background: #dc2626; color: #fff; }
+    button { border: none; border-radius: 8px; padding: 10px 14px; cursor: pointer; font-weight: bold; font-size: 13px; }
+    .btn-teal { background: #0d9488 !important; color: #fff !important; }
+    .btn-blue { background: #0284c7 !important; color: #fff !important; }
+    .btn-red { background: #dc2626 !important; color: #fff !important; }
     .preview-img { width: 96px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 6px; display: none; }
-    .prod-item { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px; background: #f8fafc; }
+    .prod-item { border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 8px; background: #f8fafc !important; color: #0f172a !important; }
     .prod-item img { width: 58px; height: 46px; object-fit: cover; border-radius: 6px; }
     .alert { margin-top: 10px; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; }
-    .alert-ok { background: #dcfce7; color: #166534; }
-    .alert-err { background: #fee2e2; color: #991b1b; }
-    .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: bold; background: #fef3c7; color: #92400e; }
-    .badge.ok { background: #dcfce7; color: #166534; }
-    .badge.no { background: #fee2e2; color: #991b1b; }
+    .alert-ok { background: #dcfce7 !important; color: #166534 !important; }
+    .alert-err { background: #fee2e2 !important; color: #991b1b !important; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: bold; background: #fef3c7 !important; color: #92400e !important; }
+    .badge.ok { background: #dcfce7 !important; color: #166534 !important; }
+    .badge.no { background: #fee2e2 !important; color: #991b1b !important; }
   </style>
 </head>
 <body>
   <header>
     <div>
       <h1>بوابة المطاعم والمتاجر — الهدهد</h1>
-      <div style="font-size:12px; opacity:0.9;">تسجيل ملف المطعم ومنتجاته بصور من الجهاز مرة واحدة لكل رقم</div>
+      <div style="font-size:12px; opacity:0.95;">إضافة وتعديل ملف المطعم ومنتجاته وصورهم من الجهاز</div>
     </div>
     <div style="display:flex; gap:8px;">
       <a href="/">العودة للمتجر</a>
@@ -989,7 +984,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
   <div class="wrap">
     <div id="registerCard" class="card">
       <h2>تقديم ملف المطعم ومنتجاته (مرة واحدة فقط لكل رقم)</h2>
-      <p style="font-size:13px; color:#475569; margin:0 0 10px;">
+      <p style="font-size:13px; color:#334155; margin:0 0 10px;">
         كل رقم هاتف مسموح له بتسجيل ملف واحد فقط، وأنت تختار الرقم السري الخاص بمطعمك بنفسك أثناء التقديم لتستخدمه لاحقاً في الدخول.
       </p>
 
@@ -1017,9 +1012,9 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
       <input type="hidden" id="regLogoData" />
       <img id="regLogoPreview" class="preview-img" alt="معاينة لوجو المطعم" />
 
-      <hr style="margin:16px 0; border:none; border-top:1px solid #e2e8f0;" />
+      <hr style="margin:16px 0; border:none; border-top:1px solid #cbd5e1;" />
 
-      <h2>إضافة منتجات المطعم بصورها من الجهاز قبل التقديم</h2>
+      <h2>إضافة منتجات المطعم بصورها من الجهاز</h2>
       <div class="row-grid">
         <div>
           <label for="draftProdName">اسم المنتج / الوجبة</label>
@@ -1049,7 +1044,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
     </div>
 
     <div id="loginCard" class="card">
-      <h2>دخول مطعم مسجل مسبقاً</h2>
+      <h2>دخول مطعم مسجل مسبقاً (لإضافة وتعديل المنتجات)</h2>
       <div class="row-grid">
         <div>
           <label for="loginPhone">رقم التليفون المسجل</label>
@@ -1070,15 +1065,13 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
         <div>
           <h2 id="dashRestName" style="margin:0;">اسم المطعم</h2>
-          <div id="dashRestInfo" style="font-size:12px; color:#475569; margin-top:4px;"></div>
+          <div id="dashRestInfo" style="font-size:12px; color:#334155; margin-top:4px;"></div>
         </div>
         <span id="dashStatusBadge" class="badge">قيد المراجعة</span>
       </div>
 
-      <div id="dashProductsBox" style="margin-top:14px;"></div>
-
-      <div id="addMoreProdSection" style="margin-top:16px; padding-top:14px; border-top:1px solid #e2e8f0; display:none;">
-        <h2>إضافة منتج جديد بصورة من الجهاز</h2>
+      <div id="addMoreProdSection" style="margin-top:14px; padding-top:12px; border-top:1px solid #cbd5e1;">
+        <h2>إضافة منتج جديد وتعديل المنتجات الحالية</h2>
         <div class="row-grid">
           <div>
             <label for="liveProdName">اسم المنتج</label>
@@ -1094,9 +1087,11 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
         <input type="hidden" id="liveProdData" />
         <img id="liveProdPreview" class="preview-img" alt="معاينة" />
         <div style="margin-top:10px;">
-          <button type="button" class="btn-teal" onclick="addLiveProduct()">حفظ المنتج</button>
+          <button type="button" class="btn-teal" onclick="addLiveProduct()">إضافة وحفظ المنتج</button>
         </div>
       </div>
+
+      <div id="dashProductsBox" style="margin-top:14px;"></div>
       <div id="dashAlert"></div>
     </div>
   </div>
@@ -1154,7 +1149,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
     function renderDraftProducts() {
       const box = document.getElementById("draftProductsList");
       if (!draftProducts.length) {
-        box.innerHTML = "<div style='color:#64748b; font-size:12px; margin-top:8px;'>لم تُضف منتجات بعد.</div>";
+        box.innerHTML = "<div style='color:#475569; font-size:12px; margin-top:8px;'>لم تُضف منتجات بعد.</div>";
         return;
       }
       box.innerHTML = draftProducts.map((p, idx) => `
@@ -1223,8 +1218,8 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
 
       const badge = document.getElementById("dashStatusBadge");
       const st = rest.status || "pending";
-      const canAddMore = (st === "approved" || st === "pending");
-      document.getElementById("addMoreProdSection").style.display = canAddMore ? "block" : "none";
+      const canEdit = (st === "approved" || st === "pending");
+      document.getElementById("addMoreProdSection").style.display = canEdit ? "block" : "none";
 
       if (st === "approved") {
         badge.textContent = "مقبول ومفعل في المتجر";
@@ -1239,15 +1234,20 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
 
       const box = document.getElementById("dashProductsBox");
       if (!prods.length) {
-        box.innerHTML = "<div style='color:#64748b; font-size:13px;'>لا توجد منتجات مسجلة لهذا المطعم بعد.</div>";
+        box.innerHTML = "<div style='color:#475569; font-size:13px;'>لا توجد منتجات مسجلة لهذا المطعم بعد.</div>";
       } else {
-        box.innerHTML = "<strong>منتجات المطعم:</strong>" + prods.map(p => `
+        box.innerHTML = "<strong>منتجات المطعم (يمكنك تعديل الاسم أو السعر أو حذف المنتج):</strong>" + prods.map(p => `
           <div class="prod-item">
-            <div style="display:flex; align-items:center; gap:10px;">
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
               ${p.image ? `<img src="${escAttr(p.image)}" alt="" />` : ""}
-              <div><strong>${esc(p.name)}</strong> — ${p.price} ج.م</div>
+              <input type="text" id="pname-${p.id}" value="${escAttr(p.name)}" style="width:160px;" />
+              <input type="number" id="pprice-${p.id}" value="${p.price}" min="1" style="width:95px;" />
             </div>
-            <span class="badge ${p.approved ? "ok" : ""}">${p.approved ? "ظاهر بالمتجر" : "بانتظار الاعتماد"}</span>
+            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+              <span class="badge ${p.approved ? "ok" : ""}">${p.approved ? "ظاهر بالمتجر" : "بانتظار الاعتماد"}</span>
+              <button type="button" class="btn-blue" onclick="editRestaurantProduct(${p.id})">حفظ التعديل</button>
+              <button type="button" class="btn-red" onclick="deleteRestaurantProduct(${p.id})">حذف</button>
+            </div>
           </div>
         `).join("");
       }
@@ -1277,8 +1277,36 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
       document.getElementById("liveProdFile").value = "";
       document.getElementById("liveProdData").value = "";
       document.getElementById("liveProdPreview").style.display = "none";
-      alertBox.innerHTML = '<div class="alert alert-ok">تم حفظ المنتج.</div>';
+      alertBox.innerHTML = '<div class="alert alert-ok">تم حفظ المنتج الجديد.</div>';
       renderRestaurantDashboard(data.restaurant, data.products || []);
+    }
+
+    async function editRestaurantProduct(pid) {
+      const alertBox = document.getElementById("dashAlert");
+      const name = document.getElementById(`pname-${pid}`).value.trim();
+      const price = Number(document.getElementById(`pprice-${pid}`).value);
+      const res = await fetch(`/api/restaurants/products/${pid}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, price }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alertBox.innerHTML = `<div class="alert alert-err">${esc(data.error || "تعذر تعديل المنتج")}</div>`;
+        return;
+      }
+      alertBox.innerHTML = '<div class="alert alert-ok">تم تحديث بيانات المنتج.</div>';
+      renderRestaurantDashboard(data.restaurant, data.products || []);
+    }
+
+    async function deleteRestaurantProduct(pid) {
+      const alertBox = document.getElementById("dashAlert");
+      const res = await fetch(`/api/restaurants/products/${pid}`, { method: "DELETE" });
+      const data = await res.json();
+      if (res.ok) {
+        alertBox.innerHTML = '<div class="alert alert-ok">تم حذف المنتج.</div>';
+        renderRestaurantDashboard(data.restaurant, data.products || []);
+      }
     }
 
     function esc(s) {
@@ -1312,7 +1340,7 @@ ADMIN_HTML = """<!DOCTYPE html>
     .card { background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 16px; }
     h2 { margin: 0 0 10px; font-size: 17px; color: #0f766e; }
     .row-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    input, select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; background: #fff; }
+    input, select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; background: #fff; color: #0f172a; }
     button { border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: bold; font-size: 12px; }
     .btn-teal { background: #0d9488; color: #fff; }
     .btn-blue { background: #0284c7; color: #fff; }
@@ -1963,10 +1991,6 @@ def add_restaurant():
 
 @app.route("/api/restaurants/register", methods=["POST"])
 def restaurant_register_once():
-    """
-    يسجل ملف المطعم ومنتجاته بصورها مرة واحدة فقط لكل رقم هاتف،
-    ويحفظ الرقم السري الذي اختاره المطعم بنفسه.
-    """
     payload = request.get_json(silent=True) or {}
     phone_raw = str(payload.get("phone", "")).strip()
     phone_norm = normalize_phone(phone_raw)
@@ -2110,6 +2134,58 @@ def restaurant_add_product():
     prods = [p for p in products_list if p.get("restaurant_id") == rest.get("id")]
     safe_rest = {k: v for k, v in rest.items() if k != "pin"}
     return jsonify({"ok": True, "restaurant": safe_rest, "products": prods}), 201
+
+
+@app.route("/api/restaurants/products/<int:pid>", methods=["PUT"])
+def restaurant_update_product(pid):
+    rid = session.get("restaurant_id")
+    if not rid:
+        return jsonify({"error": "سجل دخول المطعم أولاً"}), 401
+
+    data = load_data()
+    rest = next((r for r in data.get("restaurants", []) if int(r.get("id", -1)) == int(rid)), None)
+    if not rest:
+        return jsonify({"error": "المطعم غير موجود"}), 404
+
+    payload = request.get_json(silent=True) or {}
+    for p in data.get("products", []):
+        if int(p.get("id", -1)) == pid and p.get("restaurant_id") == rest.get("id"):
+            if "name" in payload and str(payload["name"]).strip():
+                p["name"] = str(payload["name"]).strip()
+            if "price" in payload:
+                try:
+                    val = int(float(payload["price"]))
+                    if val > 0:
+                        p["price"] = val
+                except (TypeError, ValueError):
+                    pass
+            save_data(data)
+            prods = [x for x in data.get("products", []) if x.get("restaurant_id") == rest.get("id")]
+            safe_rest = {k: v for k, v in rest.items() if k != "pin"}
+            return jsonify({"ok": True, "restaurant": safe_rest, "products": prods})
+
+    return jsonify({"error": "المنتج غير موجود"}), 404
+
+
+@app.route("/api/restaurants/products/<int:pid>", methods=["DELETE"])
+def restaurant_delete_product(pid):
+    rid = session.get("restaurant_id")
+    if not rid:
+        return jsonify({"error": "سجل دخول المطعم أولاً"}), 401
+
+    data = load_data()
+    rest = next((r for r in data.get("restaurants", []) if int(r.get("id", -1)) == int(rid)), None)
+    if not rest:
+        return jsonify({"error": "المطعم غير موجود"}), 404
+
+    data["products"] = [
+        p for p in data.get("products", [])
+        if not (int(p.get("id", -1)) == pid and p.get("restaurant_id") == rest.get("id"))
+    ]
+    save_data(data)
+    prods = [x for x in data.get("products", []) if x.get("restaurant_id") == rest.get("id")]
+    safe_rest = {k: v for k, v in rest.items() if k != "pin"}
+    return jsonify({"ok": True, "restaurant": safe_rest, "products": prods})
 
 
 @app.route("/api/restaurants/<int:rid>", methods=["DELETE"])
