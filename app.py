@@ -289,11 +289,9 @@ def dispatch_whatsapp_message(to_phone_norm, sender_phone_raw, message_text):
         except Exception as exc:
             api_error = str(exc)
 
-    wa_url = f"https://wa.me/{to_phone_norm}?text={quote(message_text)}"
     return {
         "sent_via_api": sent_via_api,
         "api_error": api_error,
-        "wa_url": wa_url,
     }
 
 
@@ -342,55 +340,78 @@ CUSTOMER_HTML = """<!DOCTYPE html>
   <title>الهدهد | توصيل نبروه والقرى المحيطة</title>
   <style>
     * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
-    body { margin: 0; background: #f1f5f9; color: #0f172a; padding-bottom: 80px; }
-    header { background: #0f766e; color: #fff; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 25; }
-    header h1 { margin: 0; font-size: 20px; }
+    body { margin: 0; background: #f1f5f9; color: #0f172a; padding-bottom: 84px; }
+    header { background: linear-gradient(135deg, #0f766e, #115e59); color: #fff; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 25; box-shadow: 0 4px 14px rgba(15,23,42,0.12); }
+    header h1 { margin: 0; font-size: 20px; display: flex; align-items: center; gap: 8px; }
+    .live-dot { width: 9px; height: 9px; border-radius: 999px; background: #4ade80; box-shadow: 0 0 0 4px rgba(74,222,128,0.25); animation: pulseDot 1.8s infinite; }
+    @keyframes pulseDot { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.25); opacity: 0.7; } }
     header .sub { font-size: 12px; opacity: 0.92; }
     .hdr-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .hdr-pill { background: rgba(255,255,255,0.16); color: #fff; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: bold; }
-    header a { color: #fff; background: #115e59; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; }
+    header a { color: #fff; background: rgba(15,23,42,0.22); text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; transition: transform 0.15s ease, background 0.15s ease; }
+    header a:hover { background: rgba(15,23,42,0.35); transform: translateY(-1px); }
     .promo-banner { max-width: 1120px; margin: 14px auto 0; padding: 0 12px; }
-    .promo-box { background: linear-gradient(135deg, #0f766e, #0284c7); color: #fff; border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; box-shadow: 0 3px 10px rgba(15,23,42,0.08); }
+    .promo-box { background: linear-gradient(135deg, #0f766e, #0284c7); color: #fff; border-radius: 14px; padding: 13px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; box-shadow: 0 6px 18px rgba(2,132,199,0.18); transition: transform 0.2s ease; }
+    .promo-box:hover { transform: translateY(-2px); }
     .container { max-width: 1120px; margin: 14px auto; padding: 0 12px; }
-    .card { background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 14px; }
+    .card { background: #fff; border-radius: 14px; padding: 15px; box-shadow: 0 4px 14px rgba(15,23,42,0.05); margin-bottom: 14px; border: 1px solid #e2e8f0; }
     h2 { margin: 0 0 12px; font-size: 17px; color: #0f766e; }
-    .rest-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; }
-    .rest-chip { min-width: 175px; border: 1px solid #cbd5e1; border-radius: 10px; padding: 8px; background: #f8fafc; color: #0f172a; cursor: pointer; display: flex; gap: 8px; align-items: center; text-align: right; }
-    .rest-chip.active { border-color: #0d9488; background: #f0fdfa; box-shadow: 0 0 0 2px rgba(13,148,136,0.15); }
-    .rest-chip img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
-    .grid-prods { display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 10px; }
-    .prod { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; background: #fafafa; }
-    .prod-img { width: 100%; height: 118px; object-fit: cover; border-radius: 8px; background: #e2e8f0; }
+    .search-row { margin-bottom: 12px; }
+    .rest-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px; }
+    .rest-chip { min-width: 178px; border: 1px solid #cbd5e1; border-radius: 12px; padding: 9px; background: #f8fafc; color: #0f172a; cursor: pointer; display: flex; gap: 8px; align-items: center; text-align: right; transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease; }
+    .rest-chip:hover { transform: translateY(-2px); border-color: #0d9488; }
+    .rest-chip:active { transform: scale(0.97); }
+    .rest-chip.active { border-color: #0d9488; background: #f0fdfa; box-shadow: 0 4px 12px rgba(13,148,136,0.16); }
+    .rest-chip img { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+    .grid-prods { display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 11px; }
+    .prod { border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; background: #ffffff; transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
+    .prod:hover { transform: translateY(-3px); box-shadow: 0 8px 18px rgba(15,23,42,0.08); border-color: #99f6e4; }
+    .prod-img { width: 100%; height: 118px; object-fit: cover; border-radius: 10px; background: #e2e8f0; }
     .store { font-size: 11px; color: #0f766e; font-weight: bold; }
     .name { font-size: 14px; font-weight: bold; }
     .price { font-size: 15px; color: #0369a1; font-weight: bold; }
-    button { border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: bold; font-size: 13px; }
+    button { border: none; border-radius: 9px; padding: 8px 12px; cursor: pointer; font-weight: bold; font-size: 13px; transition: transform 0.14s ease, filter 0.14s ease; }
+    button:active { transform: scale(0.96); }
     .btn-primary { background: #0d9488; color: #fff; width: 100%; }
+    .btn-primary:hover { filter: brightness(1.06); }
     .btn-wa { background: #16a34a; color: #fff; width: 100%; margin-top: 8px; }
     .btn-blue { background: #0284c7; color: #fff; }
-    .btn-sm { padding: 4px 8px; font-size: 12px; background: #e2e8f0; color: #0f172a; }
+    .btn-sm { padding: 5px 9px; font-size: 12px; background: #e2e8f0; color: #0f172a; }
     label { display: block; font-size: 12px; font-weight: bold; margin: 8px 0 4px; }
-    input, select { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; background: #fff; color: #0f172a; }
-    .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; gap: 6px; }
+    input, select, textarea { width: 100%; padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 9px; font-size: 13px; background: #fff; color: #0f172a; }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; gap: 6px; }
     .total-box { margin-top: 10px; padding-top: 10px; border-top: 2px solid #e2e8f0; font-size: 14px; font-weight: bold; }
-    .alert { margin-top: 8px; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; }
+    .alert { margin-top: 8px; padding: 10px 12px; border-radius: 10px; font-size: 13px; font-weight: bold; }
     .alert-ok { background: #dcfce7; color: #166534; }
     .alert-err { background: #fee2e2; color: #991b1b; }
-    .track-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-top: 10px; background: #f8fafc; font-size: 13px; }
-    .badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 12px; font-weight: bold; background: #ccfbf1; color: #0f766e; }
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-top: 1px solid #cbd5e1; display: grid; grid-template-columns: repeat(5, 1fr); z-index: 40; box-shadow: 0 -2px 10px rgba(15,23,42,0.08); }
-    .nav-tab { background: transparent; border-radius: 0; padding: 10px 2px; color: #475569; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .track-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-top: 10px; background: #f8fafc; font-size: 13px; }
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: bold; background: #ccfbf1; color: #0f766e; }
+
+    /* شريط مراحل الأوردر التفاعلي */
+    .stepper { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 10px 0; }
+    @media (max-width: 640px) { .stepper { grid-template-columns: repeat(2, 1fr); } }
+    .step-node { padding: 6px 8px; border-radius: 8px; font-size: 11px; font-weight: bold; text-align: center; background: #e2e8f0; color: #475569; border: 1px solid transparent; }
+    .step-node.done { background: #dcfce7; color: #166534; border-color: #86efac; }
+    .step-node.current { background: #0d9488; color: #fff; box-shadow: 0 3px 10px rgba(13,148,136,0.25); }
+
+    /* بطاقة مكافأة تفاعلية */
+    .reward-card { background: linear-gradient(120deg, #f0fdfa, #e0f2fe); border: 1px solid #99f6e4; border-radius: 12px; padding: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-top: 1px solid #cbd5e1; display: grid; grid-template-columns: repeat(5, 1fr); z-index: 40; box-shadow: 0 -4px 14px rgba(15,23,42,0.08); }
+    .nav-tab { background: transparent; border-radius: 0; padding: 10px 2px; color: #475569; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 2px; transition: transform 0.15s ease, color 0.15s ease; }
     .nav-tab.active { color: #0f766e; background: #f0fdfa; border-top: 3px solid #0d9488; }
+    .nav-tab.bump { transform: scale(1.12); color: #16a34a; }
     .tab-pane { display: none; }
-    .tab-pane.active { display: block; }
+    .tab-pane.active { display: block; animation: fadeIn 0.22s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
     .setting-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
 
     /* مربع تأكيد الإضافة للسلة في منتصف الشاشة */
     .cart-toast-backdrop { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 90; pointer-events: none; padding: 16px; }
     .cart-toast-backdrop.show { display: flex; }
-    .cart-toast-box { background: rgba(15, 23, 42, 0.94); color: #ffffff; border-radius: 16px; padding: 18px 22px; min-width: 210px; max-width: 300px; text-align: center; box-shadow: 0 12px 32px rgba(15, 23, 42, 0.28); transform: scale(0.85); opacity: 0; transition: transform 0.2s ease, opacity 0.2s ease; }
+    .cart-toast-box { background: rgba(15, 23, 42, 0.94); color: #ffffff; border-radius: 18px; padding: 18px 22px; min-width: 215px; max-width: 300px; text-align: center; box-shadow: 0 14px 34px rgba(15, 23, 42, 0.3); transform: scale(0.82); opacity: 0; transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 0.2s ease; }
     .cart-toast-backdrop.show .cart-toast-box { transform: scale(1); opacity: 1; }
-    .check-circle { width: 52px; height: 52px; border-radius: 999px; background: #16a34a; color: #ffffff; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 28px; font-weight: bold; box-shadow: 0 0 0 6px rgba(22, 163, 74, 0.22); }
+    .check-circle { width: 54px; height: 54px; border-radius: 999px; background: #16a34a; color: #ffffff; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 28px; font-weight: bold; box-shadow: 0 0 0 7px rgba(22, 163, 74, 0.22); }
     .cart-toast-title { font-size: 14px; font-weight: bold; }
     .cart-toast-sub { font-size: 12px; color: #cbd5e1; margin-top: 4px; }
   </style>
@@ -398,7 +419,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
 <body>
   <header>
     <div>
-      <h1>الهدهد للتوصيل المحلي</h1>
+      <h1><span class="live-dot"></span>الهدهد للتوصيل المحلي</h1>
       <div class="sub">نطاق الخدمة: نبروه والقرى المحيطة (خارج المنصورة)</div>
     </div>
     <div class="hdr-actions">
@@ -428,6 +449,10 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       <div class="card">
         <h2>المطاعم والمتاجر المعتمدة</h2>
         <div id="restaurantsStrip" class="rest-strip"></div>
+
+        <div class="search-row">
+          <input type="text" id="prodSearch" placeholder="ابحث سريعاً عن وجبة أو منتج..." oninput="renderProducts()" />
+        </div>
 
         <h2>المنتجات والوجبات المتاحة</h2>
         <div id="productsGrid" class="grid-prods"></div>
@@ -488,8 +513,16 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       <div class="card">
         <h2>إنشاء حساب / تسجيل الدخول وتأكيد رقم الواتساب</h2>
         <p style="font-size:13px; color:#475569; margin:0 0 10px;">
-          يتم توليد كود تحقق جديد في كل مرة لرقم العميل المسجل عبر رقم الإرسال المعتمد.
+          يتم إرسال كود التحقق مباشرة إلى واتساب الرقم المسجل فقط دون عرضه في المتصفح.
         </p>
+
+        <div class="reward-card">
+          <div>
+            <strong style="color:#0f766e;">بطاقة مكافأة العميل الجديد</strong>
+            <div id="rewardCardText" style="font-size:12px; color:#334155; margin-top:2px;">أكّد رقمك على واتساب لتفعيل خصم أول طلب.</div>
+          </div>
+          <span id="rewardChip" class="badge">جاهز للتفعيل</span>
+        </div>
 
         <div id="loggedCustomerBox" style="margin-bottom:12px;"></div>
 
@@ -501,11 +534,10 @@ CUSTOMER_HTML = """<!DOCTYPE html>
 
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
           <button type="button" class="btn-blue" onclick="requestOtp()">إرسال كود التحقق عبر واتساب</button>
-          <button type="button" id="openOtpWaBtn" class="btn-sm" style="background:#16a34a; color:#fff; display:none;" onclick="openLastOtpWa()">إرسال الكود على واتساب العميل</button>
         </div>
 
         <div id="otpVerifyBox" style="display:none; margin-top:12px; padding-top:12px; border-top:1px dashed #cbd5e1;">
-          <label for="otpCodeInput">أدخل الكود المرسل على واتساب</label>
+          <label for="otpCodeInput">أدخل الكود الذي وصلك على واتساب</label>
           <input type="text" id="otpCodeInput" placeholder="مثال: 482910" maxlength="8" />
           <button type="button" class="btn-primary" style="margin-top:8px;" onclick="verifyOtp()">تأكيد الكود وتفعيل الحساب</button>
         </div>
@@ -574,13 +606,13 @@ CUSTOMER_HTML = """<!DOCTYPE html>
   </nav>
 
   <script>
+    const STEPS = ["تم استلام الطلب", "جاري التجهيز", "خرج مع الطيار", "تم التوصيل"];
     let restaurants = [];
     let products = [];
     let zones = [];
     let selectedRestaurantId = null;
     let currentCustomer = null;
     let promoInfo = { enabled: true, discount: 35, label: "عرض أول طلب مجاناً" };
-    let lastOtpWaUrl = "";
     let lastWaUrl = "";
     let toastTimer = null;
     const cart = {};
@@ -596,6 +628,14 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       toastTimer = setTimeout(() => {
         backdrop.classList.remove("show");
       }, 1150);
+
+      const cartTab = document.getElementById("tab-cart");
+      if (cartTab) {
+        cartTab.classList.remove("bump");
+        void cartTab.offsetWidth;
+        cartTab.classList.add("bump");
+        setTimeout(() => cartTab.classList.remove("bump"), 260);
+      }
     }
 
     function switchTab(tabName) {
@@ -633,9 +673,18 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       document.getElementById("prefAutoFill").checked = autoFill;
       const pill = document.getElementById("accountPill");
       const box = document.getElementById("loggedCustomerBox");
+      const rewardChip = document.getElementById("rewardChip");
+      const rewardText = document.getElementById("rewardCardText");
 
       if (currentCustomer && currentCustomer.verified) {
         pill.textContent = `${currentCustomer.name} (مؤكد)`;
+        if (currentCustomer.first_order_used) {
+          rewardChip.textContent = "مستخدم";
+          rewardText.textContent = "تم الاستفادة من عرض أول طلب مسبقاً.";
+        } else {
+          rewardChip.textContent = `خصم ${promoInfo.discount} ج.م`;
+          rewardText.textContent = "حسابك مؤكد والخصم يُطبق تلقائياً على أول طلب.";
+        }
         const firstOrderStatus = currentCustomer.first_order_used
           ? "تم استخدام عرض أول طلب سابقاً"
           : `مستحق لعرض أول طلب مجاناً (خصم ${promoInfo.discount} ج.م)`;
@@ -651,6 +700,8 @@ CUSTOMER_HTML = """<!DOCTYPE html>
         }
       } else {
         pill.textContent = "ضيف — سجّل حسابك";
+        rewardChip.textContent = "جاهز للتفعيل";
+        rewardText.textContent = `أكّد رقمك على واتساب لتفعيل خصم ${promoInfo.discount} ج.م على أول طلب.`;
         box.innerHTML = "";
       }
     }
@@ -723,12 +774,20 @@ CUSTOMER_HTML = """<!DOCTYPE html>
 
     function renderProducts() {
       const box = document.getElementById("productsGrid");
-      const list = selectedRestaurantId === null
+      const q = (document.getElementById("prodSearch")?.value || "").trim().toLowerCase();
+      let list = selectedRestaurantId === null
         ? products
         : products.filter(p => Number(p.restaurant_id) === Number(selectedRestaurantId));
 
+      if (q) {
+        list = list.filter(p =>
+          String(p.name || "").toLowerCase().includes(q) ||
+          String(p.store || "").toLowerCase().includes(q)
+        );
+      }
+
       if (!list.length) {
-        box.innerHTML = "<div style='color:#64748b;'>لا توجد منتجات في هذا القسم حالياً.</div>";
+        box.innerHTML = "<div style='color:#64748b;'>لا توجد منتجات مطابقة حالياً.</div>";
         return;
       }
       box.innerHTML = list.map(p => `
@@ -837,22 +896,11 @@ CUSTOMER_HTML = """<!DOCTYPE html>
         return;
       }
 
-      lastOtpWaUrl = data.wa_url || "";
       document.getElementById("otpVerifyBox").style.display = "block";
-      const waBtn = document.getElementById("openOtpWaBtn");
-      waBtn.style.display = lastOtpWaUrl ? "inline-block" : "none";
-
-      const extraNote = data.sent_via_api
-        ? "تم إرسال الكود تلقائياً إلى واتساب العميل."
-        : "تم إنشاء الكود؛ اضغط إرسال الكود على واتساب العميل لإرساله ثم أدخل الكود هنا.";
-
-      alertBox.innerHTML = `<div class="alert alert-ok">${esc(data.message || "")}<br/><span style="font-weight:normal;">${esc(extraNote)}</span></div>`;
-    }
-
-    function openLastOtpWa() {
-      if (lastOtpWaUrl) {
-        window.open(lastOtpWaUrl, "_blank");
-      }
+      const msgTxt = data.sent_via_api
+        ? "تم إرسال كود التحقق إلى واتساب الرقم المسجل؛ أدخل الكود هنا لتفعيل الحساب."
+        : "تم طلب كود التحقق للرقم المسجل؛ تأكد من ربط خدمة الواتساب بالخادم لاستلام الكود ثم أدخله هنا.";
+      alertBox.innerHTML = `<div class="alert alert-ok">${esc(msgTxt)}</div>`;
     }
 
     async function verifyOtp() {
@@ -941,6 +989,16 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       return String(p || "").replace(/\\D+/g, "");
     }
 
+    function renderStepper(status) {
+      const idx = STEPS.indexOf(status);
+      return `<div class="stepper">` + STEPS.map((st, i) => {
+        let cls = "step-node";
+        if (idx >= 0 && i < idx) cls += " done";
+        else if (i === idx) cls += " current";
+        return `<div class="${cls}">${esc(st)}</div>`;
+      }).join("") + `</div>`;
+    }
+
     async function renderOrdersInto(q, resBox) {
       if (!q) {
         resBox.innerHTML = "";
@@ -958,6 +1016,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
             <strong>طلب #${esc(o.order_code)} (${esc(o.restaurant_name || "")})</strong>
             <span class="badge">${esc(o.status)}</span>
           </div>
+          ${renderStepper(o.status)}
           <div style="margin-top:4px;">البلد: <strong>${esc(o.zone_name)}</strong> — الإجمالي: <strong>${o.total} ج.م</strong> ${o.discount ? `(خصم ${o.discount} ج.م)` : ""}</div>
           <div>الطيار: <strong>${esc(o.courier_name || "لم يُعيّن بعد")}</strong> ${o.courier_phone ? `(${esc(o.courier_phone)})` : ""}</div>
           <div style="color:#475569; font-size:12px; margin-top:4px;">${o.items.map(i => `${esc(i.name)} ×${i.qty}`).join(" ، ")}</div>
@@ -2830,9 +2889,7 @@ def auth_request_otp():
 
     return jsonify({
         "ok": True,
-        "message": f"تم إنشاء كود تحقق جديد صالح لـ 5 دقائق (رقم الإرسال: {sender_phone} -> المستلم: {phone_norm}).",
         "sent_via_api": dispatch["sent_via_api"],
-        "wa_url": dispatch["wa_url"],
     })
 
 
