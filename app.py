@@ -22,7 +22,7 @@ DEFAULT_DATA_PATH = (
 DATA_FILE = os.environ.get("DATA_FILE", DEFAULT_DATA_PATH)
 ADMIN_PIN = os.environ.get("ADMIN_PIN", "2026")
 
-OWNER_NAME = "زيزو أمير"
+OWNER_NAME = "المهندس عبدالعزيز أمير"
 OWNER_PHONE = "01070626007"
 OWNER_WHATSAPP = "https://wa.me/201070626007"
 
@@ -310,6 +310,22 @@ def admin_required(fn):
         return fn(*args, **kwargs)
 
     return wrapper
+
+
+def build_restaurant_portal_payload(data, rest):
+    rid = int(rest.get("id"))
+    prods = [p for p in data.get("products", []) if p.get("restaurant_id") is not None and int(p.get("restaurant_id")) == rid]
+    orders = [
+        o for o in reversed(data.get("orders", []))
+        if o.get("restaurant_id") is not None and int(o.get("restaurant_id")) == rid
+    ]
+    safe_rest = {k: v for k, v in rest.items() if k != "pin"}
+    return {
+        "ok": True,
+        "restaurant": safe_rest,
+        "products": prods,
+        "orders": orders,
+    }
 
 
 CUSTOMER_HTML = """<!DOCTYPE html>
@@ -742,7 +758,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
         subtotal += line;
         return `
           <div class="cart-item">
-            <span>${esc(item.name)} × ${qty}</span>
+            <span>${esc(item.name)} (${esc(item.store)}) × ${qty}</span>
             <span>
               <button type="button" class="btn-sm" onclick="changeQty(${item.id}, -1)">-</button>
               <button type="button" class="btn-sm" onclick="changeQty(${item.id}, 1)">+</button>
@@ -843,7 +859,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
 
       const items = ids.map(id => {
         const p = products.find(x => x.id === Number(id));
-        return p ? { id: p.id, name: p.name, store: p.store, price: p.price, qty: cart[id] } : null;
+        return p ? { id: p.id, restaurant_id: p.restaurant_id, name: p.name, store: p.store, price: p.price, qty: cart[id] } : null;
       }).filter(Boolean);
 
       const res = await fetch("/api/orders", {
@@ -874,7 +890,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       alertBox.innerHTML = `
         <div class="alert alert-ok">
           تم تسجيل طلبك برقم تتبع: <strong>${esc(data.order.order_code)}</strong><br/>
-          الحالة الحالية: ${esc(data.order.status)} — الإجمالي: ${data.order.total} ج.م${discLine}
+          المطعم: <strong>${esc(data.order.restaurant_name || "المطعم")}</strong> — الحالة الحالية: ${esc(data.order.status)} — الإجمالي: ${data.order.total} ج.م${discLine}
           <button type="button" class="btn-wa" onclick="window.open(lastWaUrl, '_blank')">إرسال التفاصيل على واتساب</button>
         </div>
       `;
@@ -900,7 +916,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       resBox.innerHTML = list.map(o => `
         <div class="track-card">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <strong>طلب #${esc(o.order_code)}</strong>
+            <strong>طلب #${esc(o.order_code)} (${esc(o.restaurant_name || "")})</strong>
             <span class="badge">${esc(o.status)}</span>
           </div>
           <div style="margin-top:4px;">البلد: <strong>${esc(o.zone_name)}</strong> — الإجمالي: <strong>${o.total} ج.م</strong> ${o.discount ? `(خصم ${o.discount} ج.م)` : ""}</div>
@@ -940,24 +956,26 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>بوابة المطاعم | الهدهد</title>
+  <title>بوابة المطاعم وإدارة الطلبات | الهدهد</title>
   <style>
     * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
     body { margin: 0; background: #f1f5f9 !important; color: #0f172a !important; }
     header { background: #0f766e !important; color: #fff !important; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     header h1 { margin: 0; font-size: 19px; color: #fff !important; }
     header a { color: #fff !important; background: #115e59 !important; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; }
-    .wrap { max-width: 980px; margin: 18px auto; padding: 0 12px; }
+    .wrap { max-width: 1160px; margin: 18px auto; padding: 0 12px; }
     .card { background: #ffffff !important; color: #0f172a !important; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; border: 1px solid #cbd5e1; }
     h2 { margin: 0 0 10px; font-size: 17px; color: #0f766e !important; }
     label { display: block; font-size: 12px; font-weight: bold; margin: 10px 0 4px; color: #0f172a !important; }
     input, select { width: 100%; padding: 9px 10px; border: 1px solid #94a3b8; border-radius: 8px; font-size: 13px; background: #ffffff !important; color: #0f172a !important; }
     .row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media (max-width: 720px) { .row-grid { grid-template-columns: 1fr; } }
-    button { border: none; border-radius: 8px; padding: 10px 14px; cursor: pointer; font-weight: bold; font-size: 13px; }
+    button { border: none; border-radius: 8px; padding: 9px 13px; cursor: pointer; font-weight: bold; font-size: 12px; }
     .btn-teal { background: #0d9488 !important; color: #fff !important; }
     .btn-blue { background: #0284c7 !important; color: #fff !important; }
     .btn-red { background: #dc2626 !important; color: #fff !important; }
+    .btn-amber { background: #d97706 !important; color: #fff !important; }
+    .btn-green { background: #16a34a !important; color: #fff !important; }
     .preview-img { width: 96px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 6px; display: none; }
     .prod-item { border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 8px; background: #f8fafc !important; color: #0f172a !important; }
     .prod-item img { width: 58px; height: 46px; object-fit: cover; border-radius: 6px; }
@@ -967,13 +985,24 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
     .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: bold; background: #fef3c7 !important; color: #92400e !important; }
     .badge.ok { background: #dcfce7 !important; color: #166534 !important; }
     .badge.no { background: #fee2e2 !important; color: #991b1b !important; }
+    .badge.info { background: #e0f2fe !important; color: #075985 !important; }
+    .sub-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
+    .sub-tab { background: #e2e8f0 !important; color: #0f172a !important; padding: 10px 14px; border-radius: 8px; font-size: 13px; }
+    .sub-tab.active { background: #0f766e !important; color: #fff !important; }
+    .order-box { border: 1px solid #cbd5e1; border-radius: 12px; padding: 14px; margin-top: 12px; background: #f8fafc !important; }
+    .order-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
+    .step-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+    @media (max-width: 720px) { .step-slots { grid-template-columns: 1fr; } }
+    .slot-card { border: 1px dashed #94a3b8; border-radius: 8px; padding: 10px; background: #ffffff !important; }
+    .slot-card.done { border-style: solid; border-color: #16a34a; background: #f0fdf4 !important; }
+    .slot-title { font-size: 12px; font-weight: bold; color: #334155; margin-bottom: 6px; }
   </style>
 </head>
 <body>
   <header>
     <div>
-      <h1>بوابة المطاعم والمتاجر — الهدهد</h1>
-      <div style="font-size:12px; opacity:0.95;">إضافة وتعديل ملف المطعم ومنتجاته وصورهم من الجهاز</div>
+      <h1>بوابة المطاعم وإدارة الطلبات — الهدهد</h1>
+      <div style="font-size:12px; opacity:0.95;">استقبال وقبول طلبات المطعم، إرسالها للإدارة، تجهيزها، وإدارة المنتجات</div>
     </div>
     <div style="display:flex; gap:8px;">
       <a href="/">العودة للمتجر</a>
@@ -982,8 +1011,76 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
   </header>
 
   <div class="wrap">
+    <div id="loginCard" class="card">
+      <h2>دخول مطعم مسجل مسبقاً (إدارة الطلبات والمنتجات)</h2>
+      <div class="row-grid">
+        <div>
+          <label for="loginPhone">رقم التليفون المسجل</label>
+          <input type="text" id="loginPhone" placeholder="01xxxxxxxxx" />
+        </div>
+        <div>
+          <label for="loginPin">الرقم السري الخاص بالمطعم</label>
+          <input type="password" id="loginPin" placeholder="أدخل الرقم السري" />
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <button type="button" class="btn-blue" onclick="loginRestaurant()">دخول إلى لوحة المطعم</button>
+      </div>
+      <div id="loginAlert"></div>
+    </div>
+
+    <div id="portalDashboard" class="card" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div>
+          <h2 id="dashRestName" style="margin:0; font-size:20px;">اسم المطعم</h2>
+          <div id="dashRestInfo" style="font-size:12px; color:#334155; margin-top:4px;"></div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <span id="dashStatusBadge" class="badge">قيد المراجعة</span>
+          <button type="button" class="btn-blue" onclick="reloadCurrentRestaurant()">تحديث البيانات</button>
+        </div>
+      </div>
+
+      <div class="sub-tabs">
+        <button type="button" id="rtab-incoming" class="sub-tab active" onclick="switchRestTab('incoming')">الطلبات الواردة (<span id="cntIncoming">0</span>)</button>
+        <button type="button" id="rtab-accepted" class="sub-tab" onclick="switchRestTab('accepted')">الطلبات المقبولة (<span id="cntAccepted">0</span>)</button>
+        <button type="button" id="rtab-rejected" class="sub-tab" onclick="switchRestTab('rejected')">الطلبات التي لم تُقبل (<span id="cntRejected">0</span>)</button>
+        <button type="button" id="rtab-products" class="sub-tab" onclick="switchRestTab('products')">إضافة وتعديل المنتجات</button>
+      </div>
+
+      <div id="rpane-incoming"></div>
+      <div id="rpane-accepted" style="display:none;"></div>
+      <div id="rpane-rejected" style="display:none;"></div>
+
+      <div id="rpane-products" style="display:none;">
+        <div id="addMoreProdSection" style="padding-top:6px;">
+          <h2>إضافة منتج جديد وتعديل المنتجات الحالية</h2>
+          <div class="row-grid">
+            <div>
+              <label for="liveProdName">اسم المنتج</label>
+              <input type="text" id="liveProdName" placeholder="اسم المنتج" />
+            </div>
+            <div>
+              <label for="liveProdPrice">السعر (ج.م)</label>
+              <input type="number" id="liveProdPrice" min="1" placeholder="100" />
+            </div>
+          </div>
+          <label for="liveProdFile">اختر صورة المنتج من جهازك</label>
+          <input type="file" id="liveProdFile" accept="image/*" onchange="handleFileSelect(this, 'liveProdData', 'liveProdPreview')" />
+          <input type="hidden" id="liveProdData" />
+          <img id="liveProdPreview" class="preview-img" alt="معاينة" />
+          <div style="margin-top:10px;">
+            <button type="button" class="btn-teal" onclick="addLiveProduct()">إضافة وحفظ المنتج</button>
+          </div>
+        </div>
+        <div id="dashProductsBox" style="margin-top:14px;"></div>
+      </div>
+
+      <div id="dashAlert"></div>
+    </div>
+
     <div id="registerCard" class="card">
-      <h2>تقديم ملف المطعم ومنتجاته (مرة واحدة فقط لكل رقم)</h2>
+      <h2>تقديم ملف مطعم جديد ومنتجاته (مرة واحدة فقط لكل رقم)</h2>
       <p style="font-size:13px; color:#334155; margin:0 0 10px;">
         كل رقم هاتف مسموح له بتسجيل ملف واحد فقط، وأنت تختار الرقم السري الخاص بمطعمك بنفسك أثناء التقديم لتستخدمه لاحقاً في الدخول.
       </p>
@@ -999,7 +1096,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
         </div>
         <div>
           <label for="regName">اسم المطعم أو المتجر</label>
-          <input type="text" id="regName" placeholder="مثال: مطعم السلام" />
+          <input type="text" id="regName" placeholder="مثال: مطعم الهدى" />
         </div>
         <div>
           <label for="regCategory">التخصص / القسم</label>
@@ -1018,7 +1115,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
       <div class="row-grid">
         <div>
           <label for="draftProdName">اسم المنتج / الوجبة</label>
-          <input type="text" id="draftProdName" placeholder="مثال: وجبة نص فرخة" />
+          <input type="text" id="draftProdName" placeholder="مثال: وجبة رز" />
         </div>
         <div>
           <label for="draftProdPrice">السعر (ج.م)</label>
@@ -1042,62 +1139,22 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
       </div>
       <div id="regAlert"></div>
     </div>
-
-    <div id="loginCard" class="card">
-      <h2>دخول مطعم مسجل مسبقاً (لإضافة وتعديل المنتجات)</h2>
-      <div class="row-grid">
-        <div>
-          <label for="loginPhone">رقم التليفون المسجل</label>
-          <input type="text" id="loginPhone" placeholder="01xxxxxxxxx" />
-        </div>
-        <div>
-          <label for="loginPin">الرقم السري الخاص بالمطعم</label>
-          <input type="password" id="loginPin" placeholder="أدخل الرقم السري" />
-        </div>
-      </div>
-      <div style="margin-top:10px;">
-        <button type="button" class="btn-blue" onclick="loginRestaurant()">دخول إلى ملف المطعم</button>
-      </div>
-      <div id="loginAlert"></div>
-    </div>
-
-    <div id="portalDashboard" class="card" style="display:none;">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-        <div>
-          <h2 id="dashRestName" style="margin:0;">اسم المطعم</h2>
-          <div id="dashRestInfo" style="font-size:12px; color:#334155; margin-top:4px;"></div>
-        </div>
-        <span id="dashStatusBadge" class="badge">قيد المراجعة</span>
-      </div>
-
-      <div id="addMoreProdSection" style="margin-top:14px; padding-top:12px; border-top:1px solid #cbd5e1;">
-        <h2>إضافة منتج جديد وتعديل المنتجات الحالية</h2>
-        <div class="row-grid">
-          <div>
-            <label for="liveProdName">اسم المنتج</label>
-            <input type="text" id="liveProdName" placeholder="اسم المنتج" />
-          </div>
-          <div>
-            <label for="liveProdPrice">السعر (ج.م)</label>
-            <input type="number" id="liveProdPrice" min="1" placeholder="100" />
-          </div>
-        </div>
-        <label for="liveProdFile">اختر صورة المنتج من جهازك</label>
-        <input type="file" id="liveProdFile" accept="image/*" onchange="handleFileSelect(this, 'liveProdData', 'liveProdPreview')" />
-        <input type="hidden" id="liveProdData" />
-        <img id="liveProdPreview" class="preview-img" alt="معاينة" />
-        <div style="margin-top:10px;">
-          <button type="button" class="btn-teal" onclick="addLiveProduct()">إضافة وحفظ المنتج</button>
-        </div>
-      </div>
-
-      <div id="dashProductsBox" style="margin-top:14px;"></div>
-      <div id="dashAlert"></div>
-    </div>
   </div>
 
   <script>
     const draftProducts = [];
+    let currentRest = null;
+    let currentRestProducts = [];
+    let currentRestOrders = [];
+    let activeRestTab = "incoming";
+
+    function switchRestTab(tabName) {
+      activeRestTab = tabName;
+      ["incoming", "accepted", "rejected", "products"].forEach(t => {
+        document.getElementById(`rtab-${t}`).classList.toggle("active", t === tabName);
+        document.getElementById(`rpane-${t}`).style.display = (t === tabName) ? "block" : "none";
+      });
+    }
 
     function handleFileSelect(fileInput, hiddenId, previewId) {
       const file = fileInput.files && fileInput.files[0];
@@ -1188,7 +1245,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
       }
 
       alertBox.innerHTML = '<div class="alert alert-ok">تم تقديم ملف المطعم ومنتجاته بنجاح وحفظ الرقم السري الذي اخترته، والملف الآن قيد المراجعة.</div>';
-      renderRestaurantDashboard(data.restaurant, data.products || []);
+      applyPortalPayload(data);
     }
 
     async function loginRestaurant() {
@@ -1207,17 +1264,101 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
         return;
       }
       alertBox.innerHTML = "";
-      renderRestaurantDashboard(data.restaurant, data.products || []);
+      applyPortalPayload(data);
     }
 
-    function renderRestaurantDashboard(rest, prods) {
+    async function reloadCurrentRestaurant() {
+      const res = await fetch("/api/restaurants/session");
+      if (!res.ok) return;
+      const data = await res.json();
+      applyPortalPayload(data);
+    }
+
+    function applyPortalPayload(data) {
+      currentRest = data.restaurant;
+      currentRestProducts = data.products || [];
+      currentRestOrders = data.orders || [];
+      renderRestaurantDashboard();
+    }
+
+    function renderOrderCard(o, mode) {
+      const rState = o.restaurant_decision || "pending";
+      const sentToAdmin = !!o.sent_to_admin;
+      const prepared = !!o.prepared_by_restaurant;
+
+      let actionsHtml = "";
+      if (mode === "incoming") {
+        actionsHtml = `
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+            <button type="button" class="btn-green" onclick="decideOrder(${o.id}, 'accepted')">قبول الطلب</button>
+            <button type="button" class="btn-red" onclick="decideOrder(${o.id}, 'rejected')">عدم قبول الطلب</button>
+          </div>
+        `;
+      } else if (mode === "accepted") {
+        actionsHtml = `
+          <div class="step-slots">
+            <div class="slot-card ${rState === 'accepted' ? 'done' : ''}">
+              <div class="slot-title">الخانة 1: قبول الطلب</div>
+              <span class="badge ok">تم قبول الطلب</span>
+            </div>
+            <div class="slot-card ${sentToAdmin ? 'done' : ''}">
+              <div class="slot-title">الخانة 2: إرسال الطلب للإدارة</div>
+              ${sentToAdmin
+                ? '<span class="badge info">تم إرسال الطلب للإدارة</span>'
+                : `<button type="button" class="btn-blue" onclick="sendOrderToAdmin(${o.id})">إرسال الطلب للإدارة</button>`
+              }
+            </div>
+            <div class="slot-card ${prepared ? 'done' : ''}">
+              <div class="slot-title">الخانة 3: تم تجهيز الطلب</div>
+              ${prepared
+                ? '<span class="badge ok">تم تجهيز الطلب وجاهز للتوصيل</span>'
+                : `<button type="button" class="btn-amber" onclick="markOrderPrepared(${o.id})">تم تجهيز الطلب</button>`
+              }
+            </div>
+          </div>
+        `;
+      } else {
+        actionsHtml = `
+          <div style="margin-top:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <span class="badge no">لم يتم قبول الطلب</span>
+            <button type="button" class="btn-green" onclick="decideOrder(${o.id}, 'accepted')">قبول الطلب الآن</button>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="order-box">
+          <div class="order-head">
+            <div>
+              <strong>طلب #${esc(o.order_code)}</strong> — العميل: <strong>${esc(o.customer_name)}</strong> (${esc(o.phone)})
+            </div>
+            <div>
+              <span class="badge info">حالة الإدارة: ${esc(o.status)}</span>
+            </div>
+          </div>
+          <div style="margin-top:8px; font-size:13px;">
+            المنطقة / البلد: <strong>${esc(o.zone_name)}</strong> — رسوم التوصيل: <strong>${o.delivery_fee} ج.م</strong> — الإجمالي: <strong>${o.total} ج.م</strong>
+          </div>
+          <div style="font-size:12px; color:#334155; margin-top:4px;">
+            العنوان: <strong>${esc(o.address)}</strong>
+          </div>
+          <div style="font-size:13px; margin-top:6px;">
+            الأصناف: <strong>${o.items.map(i => `${esc(i.name)} ×${i.qty} (${i.price * i.qty} ج.م)`).join(" ، ")}</strong>
+          </div>
+          ${actionsHtml}
+        </div>
+      `;
+    }
+
+    function renderRestaurantDashboard() {
+      if (!currentRest) return;
       const dash = document.getElementById("portalDashboard");
       dash.style.display = "block";
-      document.getElementById("dashRestName").textContent = rest.name;
-      document.getElementById("dashRestInfo").textContent = `رقم الهاتف: ${rest.phone} • القسم: ${rest.category}`;
+      document.getElementById("dashRestName").textContent = currentRest.name;
+      document.getElementById("dashRestInfo").textContent = `رقم الهاتف: ${currentRest.phone} • القسم: ${currentRest.category}`;
 
       const badge = document.getElementById("dashStatusBadge");
-      const st = rest.status || "pending";
+      const st = currentRest.status || "pending";
       const canEdit = (st === "approved" || st === "pending");
       document.getElementById("addMoreProdSection").style.display = canEdit ? "block" : "none";
 
@@ -1232,11 +1373,31 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
         badge.className = "badge";
       }
 
+      const incomingOrders = currentRestOrders.filter(o => (o.restaurant_decision || "pending") === "pending");
+      const acceptedOrders = currentRestOrders.filter(o => o.restaurant_decision === "accepted");
+      const rejectedOrders = currentRestOrders.filter(o => o.restaurant_decision === "rejected");
+
+      document.getElementById("cntIncoming").textContent = incomingOrders.length;
+      document.getElementById("cntAccepted").textContent = acceptedOrders.length;
+      document.getElementById("cntRejected").textContent = rejectedOrders.length;
+
+      document.getElementById("rpane-incoming").innerHTML = incomingOrders.length
+        ? incomingOrders.map(o => renderOrderCard(o, "incoming")).join("")
+        : "<div style='color:#475569; font-size:13px; margin-top:10px;'>لا توجد طلبات واردة جديدة في انتظار الرد.</div>";
+
+      document.getElementById("rpane-accepted").innerHTML = acceptedOrders.length
+        ? acceptedOrders.map(o => renderOrderCard(o, "accepted")).join("")
+        : "<div style='color:#475569; font-size:13px; margin-top:10px;'>لا توجد طلبات مقبولة حالياً.</div>";
+
+      document.getElementById("rpane-rejected").innerHTML = rejectedOrders.length
+        ? rejectedOrders.map(o => renderOrderCard(o, "rejected")).join("")
+        : "<div style='color:#475569; font-size:13px; margin-top:10px;'>لا توجد طلبات مرفوضة.</div>";
+
       const box = document.getElementById("dashProductsBox");
-      if (!prods.length) {
+      if (!currentRestProducts.length) {
         box.innerHTML = "<div style='color:#475569; font-size:13px;'>لا توجد منتجات مسجلة لهذا المطعم بعد.</div>";
       } else {
-        box.innerHTML = "<strong>منتجات المطعم (يمكنك تعديل الاسم أو السعر أو حذف المنتج):</strong>" + prods.map(p => `
+        box.innerHTML = "<strong>منتجات المطعم (يمكنك تعديل الاسم أو السعر أو حذف المنتج):</strong>" + currentRestProducts.map(p => `
           <div class="prod-item">
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
               ${p.image ? `<img src="${escAttr(p.image)}" alt="" />` : ""}
@@ -1251,6 +1412,59 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
           </div>
         `).join("");
       }
+
+      switchRestTab(activeRestTab);
+    }
+
+    async function decideOrder(oid, decision) {
+      const alertBox = document.getElementById("dashAlert");
+      const res = await fetch(`/api/restaurants/orders/${oid}/decision`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ decision }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alertBox.innerHTML = `<div class="alert alert-err">${esc(data.error || "تعذر تحديث حالة الطلب")}</div>`;
+        return;
+      }
+      if (decision === "accepted") {
+        activeRestTab = "accepted";
+      } else if (decision === "rejected") {
+        activeRestTab = "rejected";
+      }
+      alertBox.innerHTML = `<div class="alert alert-ok">${decision === "accepted" ? "تم قبول الطلب، يمكنك الآن إرساله للإدارة وتحديد تجهيزه." : "تم نقل الطلب إلى قائمة الطلبات التي لم تُقبل."}</div>`;
+      applyPortalPayload(data);
+    }
+
+    async function sendOrderToAdmin(oid) {
+      const alertBox = document.getElementById("dashAlert");
+      const res = await fetch(`/api/restaurants/orders/${oid}/send-to-admin`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alertBox.innerHTML = `<div class="alert alert-err">${esc(data.error || "تعذر إرسال الطلب للإدارة")}</div>`;
+        return;
+      }
+      activeRestTab = "accepted";
+      alertBox.innerHTML = '<div class="alert alert-ok">تم إرسال الطلب للإدارة بنجاح، الإدارة الآن ترى الطلب الوارد من المطعم.</div>';
+      applyPortalPayload(data);
+    }
+
+    async function markOrderPrepared(oid) {
+      const alertBox = document.getElementById("dashAlert");
+      const res = await fetch(`/api/restaurants/orders/${oid}/prepared`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alertBox.innerHTML = `<div class="alert alert-err">${esc(data.error || "تعذر تحديث حالة التجهيز")}</div>`;
+        return;
+      }
+      activeRestTab = "accepted";
+      alertBox.innerHTML = '<div class="alert alert-ok">تم تسجيل (تم تجهيز الطلب) وإبلاغ الإدارة لتسليمه وتوصيله للعميل.</div>';
+      applyPortalPayload(data);
     }
 
     async function addLiveProduct() {
@@ -1278,7 +1492,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
       document.getElementById("liveProdData").value = "";
       document.getElementById("liveProdPreview").style.display = "none";
       alertBox.innerHTML = '<div class="alert alert-ok">تم حفظ المنتج الجديد.</div>';
-      renderRestaurantDashboard(data.restaurant, data.products || []);
+      applyPortalPayload(data);
     }
 
     async function editRestaurantProduct(pid) {
@@ -1296,7 +1510,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
         return;
       }
       alertBox.innerHTML = '<div class="alert alert-ok">تم تحديث بيانات المنتج.</div>';
-      renderRestaurantDashboard(data.restaurant, data.products || []);
+      applyPortalPayload(data);
     }
 
     async function deleteRestaurantProduct(pid) {
@@ -1305,7 +1519,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
       const data = await res.json();
       if (res.ok) {
         alertBox.innerHTML = '<div class="alert alert-ok">تم حذف المنتج.</div>';
-        renderRestaurantDashboard(data.restaurant, data.products || []);
+        applyPortalPayload(data);
       }
     }
 
@@ -1318,6 +1532,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
     }
 
     renderDraftProducts();
+    reloadCurrentRestaurant();
   </script>
 """ + FOOTER_BLOCK + """
 </body>
@@ -1394,15 +1609,16 @@ ADMIN_HTML = """<!DOCTYPE html>
       </div>
 
       <div class="card">
-        <h2>الطلبات الواردة وتعيين الطيار</h2>
+        <h2>الطلبات الواردة من المطاعم وتعيين الطيار</h2>
         <div style="overflow-x:auto;">
           <table>
             <thead>
               <tr>
-                <th>الكود</th>
+                <th>الكود والمطعم</th>
                 <th>العميل ورقمه</th>
                 <th>البلد والعنوان</th>
                 <th>الأصناف والإجمالي</th>
+                <th>موقف المطعم</th>
                 <th>الحالة</th>
                 <th>الطيار</th>
                 <th>حفظ</th>
@@ -1591,7 +1807,7 @@ ADMIN_HTML = """<!DOCTYPE html>
     function renderOrders() {
       const tb = document.getElementById("ordersBody");
       if (!stateData.orders.length) {
-        tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#64748b;">لا توجد طلبات حتى الآن.</td></tr>';
+        tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;">لا توجد طلبات حتى الآن.</td></tr>';
         return;
       }
       tb.innerHTML = stateData.orders.slice().reverse().map(o => {
@@ -1599,12 +1815,19 @@ ADMIN_HTML = """<!DOCTYPE html>
         const courierOpts = '<option value="">-- اختر طيار --</option>' + stateData.couriers.map(c =>
           `<option value="${c.id}" ${Number(o.courier_id) === Number(c.id) ? "selected" : ""}>${esc(c.name)} (${esc(c.phone)})</option>`
         ).join("");
+        let restStatusTxt = '<span class="st-pill st-pending">بانتظار رد المطعم</span>';
+        if (o.restaurant_decision === "rejected") restStatusTxt = '<span class="st-pill st-rejected">لم يقبله المطعم</span>';
+        else if (o.prepared_by_restaurant) restStatusTxt = '<span class="st-pill st-approved">تم تجهيزه بالمطعم</span>';
+        else if (o.sent_to_admin) restStatusTxt = '<span class="st-pill st-approved">أرسله المطعم للإدارة</span>';
+        else if (o.restaurant_decision === "accepted") restStatusTxt = '<span class="st-pill st-pending">قبله المطعم (لم يُرسل بعد)</span>';
+
         return `
           <tr>
-            <td><strong>${esc(o.order_code)}</strong></td>
+            <td><strong>${esc(o.order_code)}</strong><br/><span style="color:#0f766e;font-size:12px;">${esc(o.restaurant_name || "")}</span></td>
             <td>${esc(o.customer_name)}<br/><strong>${esc(o.phone)}</strong></td>
-            <td><strong>${esc(o.zone_name)}</strong><br/>${esc(o.address)}</td>
+            <td><strong>${esc(o.zone_name)}</strong> (${o.delivery_fee || 0} ج.م)<br/>${esc(o.address)}</td>
             <td>${o.items.map(i => `${esc(i.name)} ×${i.qty}`).join(" ، ")}<br/><strong>${o.total} ج.م</strong> ${o.discount ? `(خصم ${o.discount})` : ""}</td>
+            <td>${restStatusTxt}</td>
             <td><select id="st-${o.id}">${statusOpts}</select></td>
             <td><select id="cr-${o.id}">${courierOpts}</select></td>
             <td><button type="button" class="btn-blue" onclick="saveOrder(${o.id})">تحديث</button></td>
@@ -2032,7 +2255,6 @@ def restaurant_register_once():
     restaurants.append(rest_obj)
     data["restaurants"] = restaurants
 
-    created_products = []
     if isinstance(prods_in, list):
         products_list = data.get("products", [])
         next_pid = max([int(x.get("id", 0)) for x in products_list], default=0) + 1
@@ -2055,15 +2277,12 @@ def restaurant_register_once():
                     "image": p_img,
                 }
                 products_list.append(p_obj)
-                created_products.append(p_obj)
                 next_pid += 1
         data["products"] = products_list
 
     save_data(data)
     session["restaurant_id"] = next_id
-
-    safe_rest = {k: v for k, v in rest_obj.items() if k != "pin"}
-    return jsonify({"ok": True, "restaurant": safe_rest, "products": created_products}), 201
+    return jsonify(build_restaurant_portal_payload(data, rest_obj)), 201
 
 
 @app.route("/api/restaurants/login", methods=["POST"])
@@ -2087,9 +2306,105 @@ def restaurant_login():
         return jsonify({"error": "الرقم السري للمطعم غير صحيح"}), 401
 
     session["restaurant_id"] = rest.get("id")
-    prods = [p for p in data.get("products", []) if p.get("restaurant_id") == rest.get("id")]
-    safe_rest = {k: v for k, v in rest.items() if k != "pin"}
-    return jsonify({"ok": True, "restaurant": safe_rest, "products": prods})
+    return jsonify(build_restaurant_portal_payload(data, rest))
+
+
+@app.route("/api/restaurants/session", methods=["GET"])
+def restaurant_session_state():
+    rid = session.get("restaurant_id")
+    if not rid:
+        return jsonify({"ok": False}), 401
+    data = load_data()
+    rest = next((r for r in data.get("restaurants", []) if int(r.get("id", -1)) == int(rid)), None)
+    if not rest:
+        return jsonify({"ok": False}), 404
+    return jsonify(build_restaurant_portal_payload(data, rest))
+
+
+@app.route("/api/restaurants/orders/<int:oid>/decision", methods=["PUT"])
+def restaurant_order_decision(oid):
+    rid = session.get("restaurant_id")
+    if not rid:
+        return jsonify({"error": "سجل دخول المطعم أولاً"}), 401
+
+    payload = request.get_json(silent=True) or {}
+    decision = str(payload.get("decision", "")).strip().lower()
+    if decision not in ("accepted", "rejected"):
+        return jsonify({"error": "قرار غير صحيح"}), 400
+
+    data = load_data()
+    rest = next((r for r in data.get("restaurants", []) if int(r.get("id", -1)) == int(rid)), None)
+    if not rest:
+        return jsonify({"error": "المطعم غير موجود"}), 404
+
+    target = next(
+        (o for o in data.get("orders", []) if int(o.get("id", -1)) == oid and int(o.get("restaurant_id", -1)) == int(rid)),
+        None,
+    )
+    if not target:
+        return jsonify({"error": "الطلب غير تابع لهذا المطعم"}), 404
+
+    target["restaurant_decision"] = decision
+    if decision == "accepted":
+        target["status"] = "جاري التجهيز"
+    else:
+        target["status"] = "لم يقبله المطعم"
+        target["sent_to_admin"] = False
+        target["prepared_by_restaurant"] = False
+
+    save_data(data)
+    return jsonify(build_restaurant_portal_payload(data, rest))
+
+
+@app.route("/api/restaurants/orders/<int:oid>/send-to-admin", methods=["POST"])
+def restaurant_send_order_to_admin(oid):
+    rid = session.get("restaurant_id")
+    if not rid:
+        return jsonify({"error": "سجل دخول المطعم أولاً"}), 401
+
+    data = load_data()
+    rest = next((r for r in data.get("restaurants", []) if int(r.get("id", -1)) == int(rid)), None)
+    if not rest:
+        return jsonify({"error": "المطعم غير موجود"}), 404
+
+    target = next(
+        (o for o in data.get("orders", []) if int(o.get("id", -1)) == oid and int(o.get("restaurant_id", -1)) == int(rid)),
+        None,
+    )
+    if not target:
+        return jsonify({"error": "الطلب غير موجود"}), 404
+    if target.get("restaurant_decision") != "accepted":
+        return jsonify({"error": "اقبل الطلب أولاً قبل إرساله للإدارة"}), 400
+
+    target["sent_to_admin"] = True
+    save_data(data)
+    return jsonify(build_restaurant_portal_payload(data, rest))
+
+
+@app.route("/api/restaurants/orders/<int:oid>/prepared", methods=["POST"])
+def restaurant_mark_order_prepared(oid):
+    rid = session.get("restaurant_id")
+    if not rid:
+        return jsonify({"error": "سجل دخول المطعم أولاً"}), 401
+
+    data = load_data()
+    rest = next((r for r in data.get("restaurants", []) if int(r.get("id", -1)) == int(rid)), None)
+    if not rest:
+        return jsonify({"error": "المطعم غير موجود"}), 404
+
+    target = next(
+        (o for o in data.get("orders", []) if int(o.get("id", -1)) == oid and int(o.get("restaurant_id", -1)) == int(rid)),
+        None,
+    )
+    if not target:
+        return jsonify({"error": "الطلب غير موجود"}), 404
+    if target.get("restaurant_decision") != "accepted":
+        return jsonify({"error": "اقبل الطلب أولاً"}), 400
+
+    target["prepared_by_restaurant"] = True
+    target["sent_to_admin"] = True
+    save_data(data)
+    return jsonify(build_restaurant_portal_payload(data, rest))
 
 
 @app.route("/api/restaurants/products", methods=["POST"])
@@ -2130,10 +2445,7 @@ def restaurant_add_product():
     products_list.append(p_obj)
     data["products"] = products_list
     save_data(data)
-
-    prods = [p for p in products_list if p.get("restaurant_id") == rest.get("id")]
-    safe_rest = {k: v for k, v in rest.items() if k != "pin"}
-    return jsonify({"ok": True, "restaurant": safe_rest, "products": prods}), 201
+    return jsonify(build_restaurant_portal_payload(data, rest)), 201
 
 
 @app.route("/api/restaurants/products/<int:pid>", methods=["PUT"])
@@ -2160,9 +2472,7 @@ def restaurant_update_product(pid):
                 except (TypeError, ValueError):
                     pass
             save_data(data)
-            prods = [x for x in data.get("products", []) if x.get("restaurant_id") == rest.get("id")]
-            safe_rest = {k: v for k, v in rest.items() if k != "pin"}
-            return jsonify({"ok": True, "restaurant": safe_rest, "products": prods})
+            return jsonify(build_restaurant_portal_payload(data, rest))
 
     return jsonify({"error": "المنتج غير موجود"}), 404
 
@@ -2183,9 +2493,7 @@ def restaurant_delete_product(pid):
         if not (int(p.get("id", -1)) == pid and p.get("restaurant_id") == rest.get("id"))
     ]
     save_data(data)
-    prods = [x for x in data.get("products", []) if x.get("restaurant_id") == rest.get("id")]
-    safe_rest = {k: v for k, v in rest.items() if k != "pin"}
-    return jsonify({"ok": True, "restaurant": safe_rest, "products": prods})
+    return jsonify(build_restaurant_portal_payload(data, rest))
 
 
 @app.route("/api/restaurants/<int:rid>", methods=["DELETE"])
@@ -2531,11 +2839,33 @@ def create_order():
         except (TypeError, ValueError):
             continue
         if name and price > 0 and qty > 0:
-            clean_items.append({"name": name, "price": price, "qty": qty})
+            clean_items.append({
+                "name": name,
+                "price": price,
+                "qty": qty,
+                "store": str(it.get("store", "")).strip(),
+                "restaurant_id": it.get("restaurant_id"),
+            })
             subtotal += price * qty
 
     if not clean_items:
         return jsonify({"error": "السلة فارغة أو غير صالحة"}), 400
+
+    restaurant_id = None
+    restaurant_name = ""
+    for ci in clean_items:
+        if ci.get("restaurant_id") is not None and str(ci.get("restaurant_id")).isdigit():
+            restaurant_id = int(ci.get("restaurant_id"))
+            break
+    if restaurant_id is not None:
+        r_match = next((r for r in data.get("restaurants", []) if int(r.get("id", -1)) == restaurant_id), None)
+        if r_match:
+            restaurant_name = r_match.get("name", "")
+    if not restaurant_name:
+        restaurant_name = clean_items[0].get("store") or "مطعم الهدهد للمأكولات"
+        r_by_store = next((r for r in data.get("restaurants", []) if r.get("name") == restaurant_name), None)
+        if r_by_store:
+            restaurant_id = r_by_store.get("id")
 
     settings = data.get("settings") or {}
     promo_enabled = bool(settings.get("free_first_order_enabled", True))
@@ -2569,6 +2899,11 @@ def create_order():
         "id": order_id,
         "order_code": order_code,
         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "restaurant_id": restaurant_id,
+        "restaurant_name": restaurant_name,
+        "restaurant_decision": "pending",
+        "sent_to_admin": False,
+        "prepared_by_restaurant": False,
         "customer_name": customer_name,
         "phone": phone,
         "zone_name": zone_name,
@@ -2590,6 +2925,7 @@ def create_order():
     disc_txt = f"خصم أول طلب مجاناً: -{discount} ج.م\n" if discount > 0 else ""
     wa_msg = (
         f"*طلب جديد - الهدهد ({order_code})*\n"
+        f"المطعم: {restaurant_name}\n"
         f"العميل: {customer_name}\n"
         f"التليفون: {phone}\n"
         f"البلد: {zone_name}\n"
