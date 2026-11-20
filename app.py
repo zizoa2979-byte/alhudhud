@@ -83,6 +83,7 @@ DEFAULT_DATA = {
             "category": "مشويات ووجبات",
             "area": "نبروه والقرى المجاورة",
             "phone": "01000000001",
+            "pin": "",
             "status": "approved",
             "image": _default_svg_data_uri("مطعم الهدهد", "#0f766e"),
         },
@@ -92,6 +93,7 @@ DEFAULT_DATA = {
             "category": "رياضة ومنوعات",
             "area": "نبروه - المدينة",
             "phone": "01000000002",
+            "pin": "",
             "status": "approved",
             "image": _default_svg_data_uri("متجر الرياضة", "#0369a1"),
         },
@@ -181,10 +183,6 @@ def is_valid_image_data(url):
         or val.startswith("http://")
         or val.startswith("/")
     )
-
-
-def _hash_pin(pin):
-    return hashlib.sha256(str(pin or "").encode("utf-8")).hexdigest()
 
 
 def _otp_digest(phone_norm, code):
@@ -989,21 +987,20 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
   </header>
 
   <div class="wrap">
-    <!-- تسجيل ملف المطعم مرة واحدة لكل رقم -->
     <div id="registerCard" class="card">
       <h2>تقديم ملف المطعم ومنتجاته (مرة واحدة فقط لكل رقم)</h2>
       <p style="font-size:13px; color:#475569; margin:0 0 10px;">
-        كل رقم هاتف مسموح له بفتح وتسجيل ملف واحد فقط باسم مطعم واحد مع رقم سري خاص بالمطعم. بعد التقديم يتم إرسال الطلب للمراجعة والاعتماد.
+        كل رقم هاتف مسموح له بتسجيل ملف واحد فقط، وأنت تختار الرقم السري الخاص بمطعمك بنفسك أثناء التقديم لتستخدمه لاحقاً في الدخول.
       </p>
 
       <div class="row-grid">
         <div>
-          <label for="regPhone">رقم تليفون المطعم (مرتبط بالرقم مرة واحدة)</label>
+          <label for="regPhone">رقم تليفون المطعم (مرة واحدة فقط لكل رقم)</label>
           <input type="text" id="regPhone" placeholder="01xxxxxxxxx" />
         </div>
         <div>
-          <label for="regPin">الرقم السري الخاص بالمطعم</label>
-          <input type="password" id="regPin" placeholder="اختر رقماً سرياً للمطعم" />
+          <label for="regPin">الرقم السري الذي تختاره للمطعم</label>
+          <input type="text" id="regPin" placeholder="اكتب الرقم السري الخاص بالمطعم" autocomplete="off" />
         </div>
         <div>
           <label for="regName">اسم المطعم أو المتجر</label>
@@ -1051,17 +1048,16 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
       <div id="regAlert"></div>
     </div>
 
-    <!-- دخول مطعم مسجل مسبقاً بنفس الرقم والرقم السري -->
     <div id="loginCard" class="card">
-      <h2>دخول مطعم مسجل مسبقاً (لمتابعة حالة القبول أو إدارة المنتجات)</h2>
+      <h2>دخول مطعم مسجل مسبقاً</h2>
       <div class="row-grid">
         <div>
           <label for="loginPhone">رقم التليفون المسجل</label>
           <input type="text" id="loginPhone" placeholder="01xxxxxxxxx" />
         </div>
         <div>
-          <label for="loginPin">الرقم السري للمطعم</label>
-          <input type="password" id="loginPin" placeholder="الرقم السري" />
+          <label for="loginPin">الرقم السري الخاص بالمطعم</label>
+          <input type="password" id="loginPin" placeholder="أدخل الرقم السري" />
         </div>
       </div>
       <div style="margin-top:10px;">
@@ -1070,7 +1066,6 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
       <div id="loginAlert"></div>
     </div>
 
-    <!-- لوحة المطعم بعد الدخول -->
     <div id="portalDashboard" class="card" style="display:none;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
         <div>
@@ -1182,7 +1177,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
       const image = document.getElementById("regLogoData").value.trim();
 
       if (!phone || !pin || !name) {
-        alertBox.innerHTML = '<div class="alert alert-err">أدخل رقم التليفون والرقم السري واسم المطعم.</div>';
+        alertBox.innerHTML = '<div class="alert alert-err">أدخل رقم التليفون والرقم السري الذي اخترته واسم المطعم.</div>';
         return;
       }
 
@@ -1197,7 +1192,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
         return;
       }
 
-      alertBox.innerHTML = '<div class="alert alert-ok">تم تقديم ملف المطعم ومنتجاته بنجاح وهو الآن قيد المراجعة من الإدارة.</div>';
+      alertBox.innerHTML = '<div class="alert alert-ok">تم تقديم ملف المطعم ومنتجاته بنجاح وحفظ الرقم السري الذي اخترته، والملف الآن قيد المراجعة.</div>';
       renderRestaurantDashboard(data.restaurant, data.products || []);
     }
 
@@ -1332,6 +1327,7 @@ ADMIN_HTML = """<!DOCTYPE html>
     .st-pending { background: #fef3c7; color: #92400e; }
     .st-approved { background: #dcfce7; color: #166534; }
     .st-rejected { background: #fee2e2; color: #991b1b; }
+    .pin-box { background: #f0fdfa; border: 1px solid #99f6e4; color: #0f766e; padding: 3px 8px; border-radius: 6px; font-weight: bold; font-family: monospace; }
   </style>
 </head>
 <body>
@@ -1390,19 +1386,20 @@ ADMIN_HTML = """<!DOCTYPE html>
       </div>
 
       <div class="card">
-        <h2>إدارة المطاعم والمتاجر وطلبات التعاقد (قبول / رفض + صور من الجهاز)</h2>
+        <h2>إدارة المطاعم والمتاجر وطلبات التعاقد (الرقم السري يظهر للإدارة فقط)</h2>
         <div class="row-form">
           <input type="text" id="restName" placeholder="اسم المطعم أو المتجر" />
           <input type="text" id="restCat" placeholder="القسم (وجبات، مشويات...)" />
           <input type="text" id="restPhone" placeholder="رقم هاتف المطعم" style="width:140px;" />
-          <input type="file" id="restImgFile" accept="image/*" onchange="handleFileSelect(this, 'restImgData', 'restImgPreview')" style="max-width:220px;" />
+          <input type="text" id="restPin" placeholder="رقم سري للمطعم" style="width:130px;" />
+          <input type="file" id="restImgFile" accept="image/*" onchange="handleFileSelect(this, 'restImgData', 'restImgPreview')" style="max-width:200px;" />
           <input type="hidden" id="restImgData" />
           <img id="restImgPreview" class="preview-img" alt="" />
           <button type="button" class="btn-teal" onclick="addRestaurant()">إضافة مطعم</button>
         </div>
         <table>
           <thead>
-            <tr><th>الصورة</th><th>الاسم ورقمه</th><th>القسم</th><th>الحالة</th><th>اعتماد / رفض / حذف</th></tr>
+            <tr><th>الصورة</th><th>الاسم ورقمه</th><th>الرقم السري</th><th>القسم</th><th>الحالة</th><th>اعتماد / رفض / حذف</th></tr>
           </thead>
           <tbody id="restaurantsBody"></tbody>
         </table>
@@ -1614,10 +1611,12 @@ ADMIN_HTML = """<!DOCTYPE html>
         let pill = '<span class="st-pill st-approved">مقبول</span>';
         if (st === "pending") pill = '<span class="st-pill st-pending">قيد المراجعة</span>';
         if (st === "rejected") pill = '<span class="st-pill st-rejected">مرفوض</span>';
+        const pinDisplay = r.pin ? `<span class="pin-box">${esc(r.pin)}</span>` : '<span style="color:#64748b;">غير محدد</span>';
         return `
           <tr>
             <td>${r.image ? `<img class="thumb" src="${escAttr(r.image)}" alt="" />` : "-"}</td>
             <td><strong>${esc(r.name)}</strong><br/><span style="color:#64748b;font-size:12px;">${esc(r.phone || "")}</span></td>
+            <td>${pinDisplay}</td>
             <td>${esc(r.category || "")}</td>
             <td>${pill}</td>
             <td>
@@ -1646,17 +1645,19 @@ ADMIN_HTML = """<!DOCTYPE html>
       const name = document.getElementById("restName").value.trim();
       const category = document.getElementById("restCat").value.trim() || "مطعم";
       const phone = document.getElementById("restPhone").value.trim();
+      const pin = document.getElementById("restPin").value.trim();
       const image = document.getElementById("restImgData").value.trim();
       const res = await fetch("/api/restaurants", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, category, phone, image }),
+        body: JSON.stringify({ name, category, phone, pin, image }),
       });
       const data = await res.json();
       if (!res.ok) { setMsg(data.error || "خطأ"); return; }
       document.getElementById("restName").value = "";
       document.getElementById("restCat").value = "";
       document.getElementById("restPhone").value = "";
+      document.getElementById("restPin").value = "";
       document.getElementById("restImgFile").value = "";
       document.getElementById("restImgData").value = "";
       document.getElementById("restImgPreview").style.display = "none";
@@ -1921,7 +1922,10 @@ def update_restaurant_status(rid):
 @app.route("/api/restaurants", methods=["GET"])
 def get_restaurants():
     data = load_data()
-    approved = [r for r in data.get("restaurants", []) if is_restaurant_approved(r)]
+    approved = []
+    for r in data.get("restaurants", []):
+        if is_restaurant_approved(r):
+            approved.append({k: v for k, v in r.items() if k != "pin"})
     return jsonify(approved)
 
 
@@ -1932,6 +1936,7 @@ def add_restaurant():
     name = str(payload.get("name", "")).strip()
     category = str(payload.get("category", "مطعم")).strip() or "مطعم"
     phone = str(payload.get("phone", "")).strip()
+    pin = str(payload.get("pin", "")).strip()
     raw_img = str(payload.get("image", "")).strip()
     if not name:
         return jsonify({"error": "أدخل اسم المطعم أو المتجر"}), 400
@@ -1946,6 +1951,7 @@ def add_restaurant():
         "category": category,
         "area": "نبروه والقرى المجاورة",
         "phone": phone,
+        "pin": pin,
         "status": "approved",
         "image": image,
     }
@@ -1959,7 +1965,7 @@ def add_restaurant():
 def restaurant_register_once():
     """
     يسجل ملف المطعم ومنتجاته بصورها مرة واحدة فقط لكل رقم هاتف،
-    ويرفعه للمراجعة (pending) لحين موافقة الإدارة.
+    ويحفظ الرقم السري الذي اختاره المطعم بنفسه.
     """
     payload = request.get_json(silent=True) or {}
     phone_raw = str(payload.get("phone", "")).strip()
@@ -1971,12 +1977,11 @@ def restaurant_register_once():
     prods_in = payload.get("products") or []
 
     if len(phone_norm) < 9 or not pin or not name:
-        return jsonify({"error": "أدخل رقم التليفون والرقم السري واسم المطعم"}), 400
+        return jsonify({"error": "أدخل رقم التليفون والرقم السري الذي اخترته واسم المطعم"}), 400
 
     data = load_data()
     restaurants = data.get("restaurants", [])
 
-    # منع تسجيل نفس الرقم أكثر من مرة لأي مطعم آخر
     existing_by_phone = next(
         (r for r in restaurants if normalize_phone(r.get("phone")) == phone_norm),
         None,
@@ -1996,7 +2001,7 @@ def restaurant_register_once():
         "area": "نبروه والقرى المجاورة",
         "phone": phone_raw,
         "phone_norm": phone_norm,
-        "pin_hash": _hash_pin(pin),
+        "pin": pin,
         "status": "pending",
         "image": image,
     }
@@ -2033,7 +2038,7 @@ def restaurant_register_once():
     save_data(data)
     session["restaurant_id"] = next_id
 
-    safe_rest = {k: v for k, v in rest_obj.items() if k != "pin_hash"}
+    safe_rest = {k: v for k, v in rest_obj.items() if k != "pin"}
     return jsonify({"ok": True, "restaurant": safe_rest, "products": created_products}), 201
 
 
@@ -2053,13 +2058,13 @@ def restaurant_login():
     if not rest:
         return jsonify({"error": "هذا الرقم غير مسجل لأي مطعم"}), 404
 
-    stored_hash = rest.get("pin_hash")
-    if stored_hash and not hmac.compare_digest(stored_hash, _hash_pin(pin)):
+    stored_pin = str(rest.get("pin") or "").strip()
+    if not stored_pin or not hmac.compare_digest(stored_pin, pin):
         return jsonify({"error": "الرقم السري للمطعم غير صحيح"}), 401
 
     session["restaurant_id"] = rest.get("id")
     prods = [p for p in data.get("products", []) if p.get("restaurant_id") == rest.get("id")]
-    safe_rest = {k: v for k, v in rest.items() if k != "pin_hash"}
+    safe_rest = {k: v for k, v in rest.items() if k != "pin"}
     return jsonify({"ok": True, "restaurant": safe_rest, "products": prods})
 
 
@@ -2103,7 +2108,7 @@ def restaurant_add_product():
     save_data(data)
 
     prods = [p for p in products_list if p.get("restaurant_id") == rest.get("id")]
-    safe_rest = {k: v for k, v in rest.items() if k != "pin_hash"}
+    safe_rest = {k: v for k, v in rest.items() if k != "pin"}
     return jsonify({"ok": True, "restaurant": safe_rest, "products": prods}), 201
 
 
