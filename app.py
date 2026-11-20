@@ -6,7 +6,7 @@ import random
 import re
 from datetime import datetime, timedelta
 from functools import wraps
-from urllib.parse import quote, urlencode
+from urllib.parse import quote
 from urllib.request import Request, urlopen
 from flask import Flask, jsonify, request, session
 
@@ -231,10 +231,10 @@ def get_otp_sender_phone(data=None):
     return normalize_phone(raw_phone) or normalize_phone(DEFAULT_OTP_SENDER_PHONE)
 
 
-def dispatch_whatsapp_message(to_phone_norm, message_text):
+def dispatch_whatsapp_message(to_phone_norm, sender_phone_norm, message_text):
     """
-    يرسل الرسالة تلقائياً عبر بوابة واتساب إذا تم ضبط WHATSAPP_API_URL و WHATSAPP_API_TOKEN،
-    وإلا يعيد رابط واتساب جاهز من رقم الإرسال المحدد.
+    يرسل الرسالة تلقائياً عبر بوابة واتساب من رقم الإرسال المحدد إلى رقم العميل،
+    ويعيد رابط واتساب موجه لرقم العميل كمسار احتياطي.
     """
     sent_via_api = False
     api_error = ""
@@ -242,6 +242,8 @@ def dispatch_whatsapp_message(to_phone_norm, message_text):
     if WHATSAPP_API_URL:
         try:
             body_bytes = json.dumps({
+                "from": sender_phone_norm,
+                "sender": sender_phone_norm,
                 "to": to_phone_norm,
                 "phone": to_phone_norm,
                 "message": message_text,
@@ -358,7 +360,6 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- تبويب 1: المتجر والطلبات -->
   <div id="pane-store" class="tab-pane active">
     <div class="container">
       <div>
@@ -406,7 +407,6 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- تبويب 2: طلباتي -->
   <div id="pane-orders" class="tab-pane">
     <div class="container" style="grid-template-columns: 1fr;">
       <div class="card">
@@ -420,13 +420,12 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- تبويب 3: الحساب وتأكيد كود الواتساب -->
   <div id="pane-account" class="tab-pane">
     <div class="container" style="grid-template-columns: 1fr;">
       <div class="card">
         <h2>إنشاء حساب / تسجيل الدخول وتأكيد رقم الواتساب</h2>
         <p style="font-size:13px; color:#475569; margin:0 0 10px;">
-          يتم إرسال كود تحقق متغير جديد في كل مرة عبر واتساب للتأكد من ملكية الرقم وحفظ حسابك وعرض أول طلب مجاناً.
+          يتم إرسال كود تحقق متغير جديد في كل مرة من رقم الإرسال المعتمد إلى واتساب العميل المسجل لتأكيد ملكية الرقم وحفظ الحساب وعرض أول طلب مجاناً.
         </p>
 
         <div id="loggedCustomerBox" style="margin-bottom:12px;"></div>
@@ -439,7 +438,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
 
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
           <button type="button" class="btn-blue" onclick="requestOtp()">إرسال كود التحقق عبر واتساب</button>
-          <button type="button" id="openOtpWaBtn" class="btn-sm" style="background:#16a34a; color:#fff; display:none;" onclick="openLastOtpWa()">فتح رسالة الواتساب</button>
+          <button type="button" id="openOtpWaBtn" class="btn-sm" style="background:#16a34a; color:#fff; display:none;" onclick="openLastOtpWa()">فتح واتساب للرقم المسجل</button>
         </div>
 
         <div id="otpVerifyBox" style="display:none; margin-top:12px; padding-top:12px; border-top:1px dashed #cbd5e1;">
@@ -453,7 +452,6 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- تبويب 4: الإعدادات -->
   <div id="pane-settings" class="tab-pane">
     <div class="container" style="grid-template-columns: 1fr;">
       <div class="card">
@@ -753,8 +751,8 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       waBtn.style.display = lastOtpWaUrl ? "inline-block" : "none";
 
       const extraNote = data.sent_via_api
-        ? "تم إرسال الكود تلقائياً إلى واتساب."
-        : "تم توليد كود جديد؛ اضغط فتح رسالة الواتساب لإرسال/استلام الكود ثم أدخله هنا.";
+        ? "تم إرسال الكود تلقائياً من رقم الإرسال المعتمد إلى واتساب العميل."
+        : "تم توليد كود جديد؛ اربط بوابة الإرسال التلقائي أو استخدم زر واتساب للرقم المسجل ثم أدخل الكود هنا.";
 
       alertBox.innerHTML = `<div class="alert alert-ok">${esc(data.message || "")}<br/><span style="font-weight:normal;">${esc(extraNote)}</span></div>`;
     }
@@ -1649,7 +1647,6 @@ def auth_request_otp():
     otp_code = f"{random.randint(100000, 999999)}"
     expires_at = (now + timedelta(seconds=OTP_TTL_SECONDS)).isoformat()
 
-    # إبطال أي كود سابق لنفس الرقم لضمان أن كل مرة يولد كود جديد مختلف
     challenges = [
         ch for ch in data.get("otp_challenges", [])
         if normalize_phone(ch.get("phone_norm")) != phone_norm
@@ -1690,11 +1687,11 @@ def auth_request_otp():
         f"كود تفعيل حسابك هو: *{otp_code}*\n"
         f"صالح لمدة 5 دقائق فقط ولا تشاركه مع أحد."
     )
-    dispatch = dispatch_whatsapp_message(sender_phone, otp_msg)
+    dispatch = dispatch_whatsapp_message(phone_norm, sender_phone, otp_msg)
 
     return jsonify({
         "ok": True,
-        "message": f"تم إنشاء كود تحقق جديد صالح لـ 5 دقائق (رقم الإرسال: {sender_phone}).",
+        "message": f"تم إنشاء كود تحقق جديد صالح لـ 5 دقائق (رقم الإرسال: {sender_phone} -> المستلم: {phone_norm}).",
         "sent_via_api": dispatch["sent_via_api"],
         "wa_url": dispatch["wa_url"],
     })
@@ -1797,7 +1794,6 @@ def create_order():
     if not clean_items:
         return jsonify({"error": "السلة فارغة أو غير صالحة"}), 400
 
-    # حساب عرض "أول طلب مجاناً" للعميل المؤكد الذي لم يستخدم العرض من قبل
     settings = data.get("settings") or {}
     promo_enabled = bool(settings.get("free_first_order_enabled", True))
     promo_amount = int(settings.get("free_first_order_discount", FREE_FIRST_ORDER_DISCOUNT))
@@ -1861,7 +1857,7 @@ def create_order():
         f"{disc_txt}"
         f"*الإجمالي: {total} ج.م*"
     )
-    wa_url = f"https://wa.me/{OWNER_PHONE if False else '201070626007'}?text={quote(wa_msg)}"
+    wa_url = f"https://wa.me/201070626007?text={quote(wa_msg)}"
     return jsonify({"order": order, "whatsapp_url": wa_url}), 201
 
 
