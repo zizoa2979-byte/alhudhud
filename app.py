@@ -22,15 +22,13 @@ DEFAULT_DATA_PATH = (
 DATA_FILE = os.environ.get("DATA_FILE", DEFAULT_DATA_PATH)
 ADMIN_PIN = os.environ.get("ADMIN_PIN", "2026")
 
-# رقم التواصل الأساسي لصاحب التصميم في الفوتر
 OWNER_NAME = "زيزو أمير"
 OWNER_PHONE = "01070626007"
 OWNER_WHATSAPP = "https://wa.me/201070626007"
 
-# رقم الإرسال الخاص بكود التحقق عبر واتساب (قابل للتغيير من لوحة الإدارة أو متغيرات البيئة)
 DEFAULT_OTP_SENDER_PHONE = os.environ.get(
     "OTP_WHATSAPP_SENDER",
-    os.environ.get("WHATSAPP_PHONE", "01025090134"),
+    os.environ.get("WHATSAPP_PHONE", "0102509044"),
 )
 WHATSAPP_API_URL = os.environ.get("WHATSAPP_API_URL", "").strip()
 WHATSAPP_API_TOKEN = os.environ.get("WHATSAPP_API_TOKEN", "").strip()
@@ -152,9 +150,9 @@ def normalize_phone(phone):
     digits = re.sub(r"\D+", "", str(phone or ""))
     if digits.startswith("0020"):
         digits = "20" + digits[4:]
-    elif digits.startswith("0") and len(digits) == 11:
+    elif digits.startswith("0") and len(digits) >= 10:
         digits = "20" + digits[1:]
-    elif len(digits) == 10 and digits.startswith("1"):
+    elif len(digits) in (9, 10) and digits.startswith("1"):
         digits = "20" + digits
     return digits
 
@@ -228,22 +226,19 @@ def get_otp_sender_phone(data=None):
     src = data or load_data()
     settings = src.get("settings") or {}
     raw_phone = str(settings.get("otp_sender_phone") or DEFAULT_OTP_SENDER_PHONE).strip()
-    return normalize_phone(raw_phone) or normalize_phone(DEFAULT_OTP_SENDER_PHONE)
+    return raw_phone or DEFAULT_OTP_SENDER_PHONE
 
 
-def dispatch_whatsapp_message(to_phone_norm, sender_phone_norm, message_text):
-    """
-    يرسل الرسالة تلقائياً عبر بوابة واتساب من رقم الإرسال المحدد إلى رقم العميل،
-    ويعيد رابط واتساب موجه لرقم العميل كمسار احتياطي.
-    """
+def dispatch_whatsapp_message(to_phone_norm, sender_phone_raw, message_text):
     sent_via_api = False
     api_error = ""
+    sender_norm = normalize_phone(sender_phone_raw) or sender_phone_raw
 
     if WHATSAPP_API_URL:
         try:
             body_bytes = json.dumps({
-                "from": sender_phone_norm,
-                "sender": sender_phone_norm,
+                "from": sender_norm,
+                "sender": sender_norm,
                 "to": to_phone_norm,
                 "phone": to_phone_norm,
                 "message": message_text,
@@ -296,7 +291,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
   <title>الهدهد | توصيل نبروه والقرى المحيطة</title>
   <style>
     * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
-    body { margin: 0; background: #f1f5f9; color: #0f172a; padding-bottom: 76px; }
+    body { margin: 0; background: #f1f5f9; color: #0f172a; padding-bottom: 80px; }
     header { background: #0f766e; color: #fff; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 25; }
     header h1 { margin: 0; font-size: 20px; }
     header .sub { font-size: 12px; opacity: 0.92; }
@@ -305,8 +300,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     header a { color: #fff; background: #115e59; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; }
     .promo-banner { max-width: 1120px; margin: 14px auto 0; padding: 0 12px; }
     .promo-box { background: linear-gradient(135deg, #0f766e, #0284c7); color: #fff; border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; box-shadow: 0 3px 10px rgba(15,23,42,0.08); }
-    .container { max-width: 1120px; margin: 14px auto; padding: 0 12px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
-    @media (max-width: 860px) { .container { grid-template-columns: 1fr; } }
+    .container { max-width: 1120px; margin: 14px auto; padding: 0 12px; }
     .card { background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 14px; }
     h2 { margin: 0 0 12px; font-size: 17px; color: #0f766e; }
     .rest-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; }
@@ -333,8 +327,8 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     .alert-err { background: #fee2e2; color: #991b1b; }
     .track-card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; margin-top: 10px; background: #f8fafc; font-size: 13px; }
     .badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 12px; font-weight: bold; background: #ccfbf1; color: #0f766e; }
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-top: 1px solid #cbd5e1; display: grid; grid-template-columns: repeat(4, 1fr); z-index: 40; box-shadow: 0 -2px 10px rgba(15,23,42,0.08); }
-    .nav-tab { background: transparent; border-radius: 0; padding: 10px 4px; color: #475569; font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-top: 1px solid #cbd5e1; display: grid; grid-template-columns: repeat(5, 1fr); z-index: 40; box-shadow: 0 -2px 10px rgba(15,23,42,0.08); }
+    .nav-tab { background: transparent; border-radius: 0; padding: 10px 2px; color: #475569; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
     .nav-tab.active { color: #0f766e; background: #f0fdfa; border-top: 3px solid #0d9488; }
     .tab-pane { display: none; }
     .tab-pane.active { display: block; }
@@ -360,55 +354,58 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     </div>
   </div>
 
+  <!-- 1. المتجر -->
   <div id="pane-store" class="tab-pane active">
     <div class="container">
-      <div>
-        <div class="card">
-          <h2>المطاعم والمتاجر</h2>
-          <div id="restaurantsStrip" class="rest-strip"></div>
+      <div class="card">
+        <h2>المطاعم والمتاجر</h2>
+        <div id="restaurantsStrip" class="rest-strip"></div>
 
-          <h2>المنتجات والوجبات المتاحة</h2>
-          <div id="productsGrid" class="grid-prods"></div>
-        </div>
-
-        <div class="card">
-          <h2>تتبع الأوردر وطلباتي</h2>
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <input type="text" id="trackQuery" placeholder="اكتب رقم التليفون أو رقم الأوردر (مثال: HD-1001)" style="flex:1; min-width:200px;" />
-            <button type="button" class="btn-blue" onclick="trackOrders()">تتبع الآن</button>
-          </div>
-          <div id="trackResults"></div>
-        </div>
+        <h2>المنتجات والوجبات المتاحة</h2>
+        <div id="productsGrid" class="grid-prods"></div>
       </div>
 
-      <div>
-        <div class="card">
-          <h2>سلة الطلب وتحديد البلد</h2>
-          <div id="cartBox">السلة فارغة حالياً.</div>
-
-          <label for="zoneSelect">البلد / القرية (توصيل نبروه والقرى)</label>
-          <select id="zoneSelect" onchange="renderCart()"></select>
-
-          <label for="custName">اسم العميل</label>
-          <input type="text" id="custName" placeholder="اكتب اسمك" />
-
-          <label for="custPhone">رقم التليفون</label>
-          <input type="text" id="custPhone" placeholder="01xxxxxxxxx" />
-
-          <label for="custAddress">العنوان بالتفصيل</label>
-          <input type="text" id="custAddress" placeholder="الشارع / علامة مميزة في نبروه أو القرية" />
-
-          <div id="totalBox" class="total-box">الإجمالي: 0 ج.م</div>
-
-          <button type="button" class="btn-primary" style="margin-top:10px;" onclick="submitOrder()">تأكيد الطلب وتسجيل التتبع</button>
-          <div id="orderAlert"></div>
+      <div class="card">
+        <h2>تتبع الأوردر وطلباتي</h2>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <input type="text" id="trackQuery" placeholder="اكتب رقم التليفون أو رقم الأوردر (مثال: HD-1001)" style="flex:1; min-width:200px;" />
+          <button type="button" class="btn-blue" onclick="trackOrders()">تتبع الآن</button>
         </div>
+        <div id="trackResults"></div>
       </div>
     </div>
   </div>
 
+  <!-- 2. السلة وتحديد البلد -->
+  <div id="pane-cart" class="tab-pane">
+    <div class="container">
+      <div class="card">
+        <h2>سلة الطلب وتحديد البلد</h2>
+        <div id="cartBox">السلة فارغة حالياً.</div>
+
+        <label for="zoneSelect">البلد / القرية (توصيل نبروه والقرى)</label>
+        <select id="zoneSelect" onchange="renderCart()"></select>
+
+        <label for="custName">اسم العميل</label>
+        <input type="text" id="custName" placeholder="اكتب اسمك" />
+
+        <label for="custPhone">رقم التليفون</label>
+        <input type="text" id="custPhone" placeholder="01xxxxxxxxx" />
+
+        <label for="custAddress">العنوان بالتفصيل</label>
+        <input type="text" id="custAddress" placeholder="الشارع / علامة مميزة في نبروه أو القرية" />
+
+        <div id="totalBox" class="total-box">الإجمالي: 0 ج.م</div>
+
+        <button type="button" class="btn-primary" style="margin-top:10px;" onclick="submitOrder()">تأكيد الطلب وتسجيل التتبع</button>
+        <div id="orderAlert"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. طلباتي -->
   <div id="pane-orders" class="tab-pane">
-    <div class="container" style="grid-template-columns: 1fr;">
+    <div class="container">
       <div class="card">
         <h2>سجل طلباتي وحالة التوصيل</h2>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -420,12 +417,13 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     </div>
   </div>
 
+  <!-- 4. الحساب وتأكيد كود الواتساب -->
   <div id="pane-account" class="tab-pane">
-    <div class="container" style="grid-template-columns: 1fr;">
+    <div class="container">
       <div class="card">
         <h2>إنشاء حساب / تسجيل الدخول وتأكيد رقم الواتساب</h2>
         <p style="font-size:13px; color:#475569; margin:0 0 10px;">
-          يتم إرسال كود تحقق متغير جديد في كل مرة من رقم الإرسال المعتمد إلى واتساب العميل المسجل لتأكيد ملكية الرقم وحفظ الحساب وعرض أول طلب مجاناً.
+          يتم توليد كود تحقق جديد في كل مرة لرقم العميل المسجل عبر رقم الإرسال المعتمد.
         </p>
 
         <div id="loggedCustomerBox" style="margin-bottom:12px;"></div>
@@ -438,7 +436,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
 
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
           <button type="button" class="btn-blue" onclick="requestOtp()">إرسال كود التحقق عبر واتساب</button>
-          <button type="button" id="openOtpWaBtn" class="btn-sm" style="background:#16a34a; color:#fff; display:none;" onclick="openLastOtpWa()">فتح واتساب للرقم المسجل</button>
+          <button type="button" id="openOtpWaBtn" class="btn-sm" style="background:#16a34a; color:#fff; display:none;" onclick="openLastOtpWa()">إرسال الكود على واتساب العميل</button>
         </div>
 
         <div id="otpVerifyBox" style="display:none; margin-top:12px; padding-top:12px; border-top:1px dashed #cbd5e1;">
@@ -452,8 +450,9 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     </div>
   </div>
 
+  <!-- 5. الإعدادات -->
   <div id="pane-settings" class="tab-pane">
-    <div class="container" style="grid-template-columns: 1fr;">
+    <div class="container">
       <div class="card">
         <h2>إعدادات التطبيق والتوصيل</h2>
 
@@ -496,6 +495,9 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     <button type="button" id="tab-store" class="nav-tab active" onclick="switchTab('store')">
       <span>المتجر</span>
     </button>
+    <button type="button" id="tab-cart" class="nav-tab" onclick="switchTab('cart')">
+      <span>السلة (<span id="bottomCartCount">0</span>)</span>
+    </button>
     <button type="button" id="tab-orders" class="nav-tab" onclick="switchTab('orders')">
       <span>طلباتي</span>
     </button>
@@ -519,10 +521,13 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     const cart = {};
 
     function switchTab(tabName) {
-      ["store", "orders", "account", "settings"].forEach(name => {
+      ["store", "cart", "orders", "account", "settings"].forEach(name => {
         document.getElementById(`tab-${name}`).classList.toggle("active", name === tabName);
         document.getElementById(`pane-${name}`).classList.toggle("active", name === tabName);
       });
+      if (tabName === "cart") {
+        renderCart();
+      }
       if (tabName === "orders") {
         const inp = document.getElementById("myOrdersPhone");
         if (!inp.value && currentCustomer && currentCustomer.phone) {
@@ -531,6 +536,12 @@ CUSTOMER_HTML = """<!DOCTYPE html>
         loadMyOrders();
       }
       window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function updateCartBadge() {
+      const totalQty = Object.values(cart).reduce((a, b) => a + Number(b || 0), 0);
+      const el = document.getElementById("bottomCartCount");
+      if (el) el.textContent = totalQty;
     }
 
     function saveLocalPrefs() {
@@ -687,6 +698,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     }
 
     function renderCart() {
+      updateCartBadge();
       const box = document.getElementById("cartBox");
       const ids = Object.keys(cart);
       let subtotal = 0;
@@ -751,8 +763,8 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       waBtn.style.display = lastOtpWaUrl ? "inline-block" : "none";
 
       const extraNote = data.sent_via_api
-        ? "تم إرسال الكود تلقائياً من رقم الإرسال المعتمد إلى واتساب العميل."
-        : "تم توليد كود جديد؛ اربط بوابة الإرسال التلقائي أو استخدم زر واتساب للرقم المسجل ثم أدخل الكود هنا.";
+        ? "تم إرسال الكود تلقائياً إلى واتساب العميل."
+        : "تم إنشاء الكود؛ اضغط إرسال الكود على واتساب العميل لإرساله من رقم الإرسال المعتمد ثم أدخل الكود هنا.";
 
       alertBox.innerHTML = `<div class="alert alert-ok">${esc(data.message || "")}<br/><span style="font-weight:normal;">${esc(extraNote)}</span></div>`;
     }
@@ -947,7 +959,7 @@ ADMIN_HTML = """<!DOCTYPE html>
         <h2>إعدادات رقم الواتساب وعرض أول طلب مجاناً</h2>
         <div class="row-form">
           <label style="margin:0;">رقم إرسال كود الواتساب:</label>
-          <input type="text" id="cfgOtpSender" placeholder="01025090134" style="width:160px;" />
+          <input type="text" id="cfgOtpSender" placeholder="0102509044" style="width:160px;" />
           <label style="margin:0;">خصم أول طلب (ج.م):</label>
           <input type="number" id="cfgPromoDiscount" min="0" style="width:100px;" />
           <select id="cfgPromoEnabled">
@@ -1102,7 +1114,7 @@ ADMIN_HTML = """<!DOCTYPE html>
 
     function renderSettings() {
       const cfg = stateData.settings || {};
-      document.getElementById("cfgOtpSender").value = cfg.otp_sender_phone || "01025090134";
+      document.getElementById("cfgOtpSender").value = cfg.otp_sender_phone || "0102509044";
       document.getElementById("cfgPromoDiscount").value = cfg.free_first_order_discount ?? 35;
       document.getElementById("cfgPromoEnabled").value = cfg.free_first_order_enabled === false ? "false" : "true";
     }
@@ -1399,10 +1411,10 @@ def update_admin_settings():
     settings = data.get("settings") or {}
 
     if "otp_sender_phone" in payload:
-        sender_norm = normalize_phone(payload.get("otp_sender_phone"))
-        if len(sender_norm) < 10:
+        sender_raw = str(payload.get("otp_sender_phone") or "").strip()
+        if len(re.sub(r"\D+", "", sender_raw)) < 9:
             return jsonify({"error": "رقم إرسال الواتساب غير صحيح"}), 400
-        settings["otp_sender_phone"] = str(payload.get("otp_sender_phone")).strip()
+        settings["otp_sender_phone"] = sender_raw
 
     if "free_first_order_enabled" in payload:
         settings["free_first_order_enabled"] = bool(payload.get("free_first_order_enabled"))
