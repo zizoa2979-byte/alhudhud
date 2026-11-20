@@ -106,6 +106,7 @@ DEFAULT_DATA = {
             "name": "كورة أديداس تدريب",
             "price": 450,
             "approved": True,
+            "available": True,
             "image": _default_svg_data_uri("كورة أديداس", "#0284c7"),
         },
         {
@@ -115,6 +116,7 @@ DEFAULT_DATA = {
             "name": "كرتونة مياه معدنية",
             "price": 55,
             "approved": True,
+            "available": True,
             "image": _default_svg_data_uri("مياه معدنية", "#0d9488"),
         },
         {
@@ -124,6 +126,7 @@ DEFAULT_DATA = {
             "name": "وجبة فراخ مشوية",
             "price": 140,
             "approved": True,
+            "available": True,
             "image": _default_svg_data_uri("وجبة فراخ مشوية", "#b45309"),
         },
     ],
@@ -222,6 +225,9 @@ def load_data():
                     if isinstance(raw.get(k), dict):
                         merged_sub.update(raw[k])
                     raw[k] = merged_sub
+            for p in raw.get("products", []):
+                if isinstance(p, dict) and "available" not in p:
+                    p["available"] = True
             return raw
     except (json.JSONDecodeError, OSError):
         return base_copy
@@ -963,7 +969,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
     header { background: #0f766e !important; color: #fff !important; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     header h1 { margin: 0; font-size: 19px; color: #fff !important; }
     header a { color: #fff !important; background: #115e59 !important; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; }
-    .wrap { max-width: 1160px; margin: 18px auto; padding: 0 12px; }
+    .wrap { max-width: 1180px; margin: 18px auto; padding: 0 12px; }
     .card { background: #ffffff !important; color: #0f172a !important; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; border: 1px solid #cbd5e1; }
     h2 { margin: 0 0 10px; font-size: 17px; color: #0f766e !important; }
     label { display: block; font-size: 12px; font-weight: bold; margin: 10px 0 4px; color: #0f172a !important; }
@@ -976,9 +982,10 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
     .btn-red { background: #dc2626 !important; color: #fff !important; }
     .btn-amber { background: #d97706 !important; color: #fff !important; }
     .btn-green { background: #16a34a !important; color: #fff !important; }
+    .btn-gray { background: #475569 !important; color: #fff !important; }
     .preview-img { width: 96px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 6px; display: none; }
-    .prod-item { border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 8px; background: #f8fafc !important; color: #0f172a !important; }
-    .prod-item img { width: 58px; height: 46px; object-fit: cover; border-radius: 6px; }
+    .prod-item { border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 10px; background: #f8fafc !important; color: #0f172a !important; }
+    .prod-item img { width: 64px; height: 50px; object-fit: cover; border-radius: 6px; }
     .alert { margin-top: 10px; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; }
     .alert-ok { background: #dcfce7 !important; color: #166534 !important; }
     .alert-err { background: #fee2e2 !important; color: #991b1b !important; }
@@ -1001,8 +1008,8 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
 <body>
   <header>
     <div>
-      <h1>بوابة المطاعم وإدارة الطلبات — الهدهد</h1>
-      <div style="font-size:12px; opacity:0.95;">استقبال وقبول طلبات المطعم، إرسالها للإدارة، تجهيزها، وإدارة المنتجات</div>
+      <h1>بوابة المطاعم وإدارة الطلبات والمنتجات — الهدهد</h1>
+      <div style="font-size:12px; opacity:0.95;">لوحة متكاملة للمطعم: إدارة المنتجات وتوفرها، والطلبات والقبول والتجهيز والإرسال للإدارة</div>
     </div>
     <div style="display:flex; gap:8px;">
       <a href="/">العودة للمتجر</a>
@@ -1011,54 +1018,114 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
   </header>
 
   <div class="wrap">
-    <div id="loginCard" class="card">
-      <h2>دخول مطعم مسجل مسبقاً (إدارة الطلبات والمنتجات)</h2>
-      <div class="row-grid">
-        <div>
-          <label for="loginPhone">رقم التليفون المسجل</label>
-          <input type="text" id="loginPhone" placeholder="01xxxxxxxxx" />
+    <div id="authSection">
+      <div id="loginCard" class="card">
+        <h2>دخول مطعم مسجل مسبقاً (إدارة كاملة للطلبات والمنتجات)</h2>
+        <div class="row-grid">
+          <div>
+            <label for="loginPhone">رقم التليفون المسجل</label>
+            <input type="text" id="loginPhone" placeholder="01xxxxxxxxx" />
+          </div>
+          <div>
+            <label for="loginPin">الرقم السري الخاص بالمطعم</label>
+            <input type="password" id="loginPin" placeholder="أدخل الرقم السري" />
+          </div>
         </div>
-        <div>
-          <label for="loginPin">الرقم السري الخاص بالمطعم</label>
-          <input type="password" id="loginPin" placeholder="أدخل الرقم السري" />
+        <div style="margin-top:10px;">
+          <button type="button" class="btn-blue" onclick="loginRestaurant()">دخول إلى لوحة المطعم</button>
         </div>
+        <div id="loginAlert"></div>
       </div>
-      <div style="margin-top:10px;">
-        <button type="button" class="btn-blue" onclick="loginRestaurant()">دخول إلى لوحة المطعم</button>
+
+      <div id="registerCard" class="card">
+        <h2>تقديم ملف مطعم جديد ومنتجاته (مرة واحدة فقط لكل رقم)</h2>
+        <p style="font-size:13px; color:#334155; margin:0 0 10px;">
+          كل رقم هاتف مسموح له بتسجيل ملف واحد فقط، وأنت تختار الرقم السري الخاص بمطعمك بنفسك أثناء التقديم لتستخدمه لاحقاً في الدخول.
+        </p>
+
+        <div class="row-grid">
+          <div>
+            <label for="regPhone">رقم تليفون المطعم (مرة واحدة فقط لكل رقم)</label>
+            <input type="text" id="regPhone" placeholder="01xxxxxxxxx" />
+          </div>
+          <div>
+            <label for="regPin">الرقم السري الذي تختاره للمطعم</label>
+            <input type="text" id="regPin" placeholder="اكتب الرقم السري الخاص بالمطعم" autocomplete="off" />
+          </div>
+          <div>
+            <label for="regName">اسم المطعم أو المتجر</label>
+            <input type="text" id="regName" placeholder="مثال: مطعم الهدى" />
+          </div>
+          <div>
+            <label for="regCategory">التخصص / القسم</label>
+            <input type="text" id="regCategory" placeholder="مشويات، وجبات، كشري، حلويات..." />
+          </div>
+        </div>
+
+        <label for="regLogoFile">اختر صورة / لوجو المطعم من جهازك</label>
+        <input type="file" id="regLogoFile" accept="image/*" onchange="handleFileSelect(this, 'regLogoData', 'regLogoPreview')" />
+        <input type="hidden" id="regLogoData" />
+        <img id="regLogoPreview" class="preview-img" alt="معاينة لوجو المطعم" />
+
+        <hr style="margin:16px 0; border:none; border-top:1px solid #cbd5e1;" />
+
+        <h2>إضافة منتجات المطعم بصورها من الجهاز</h2>
+        <div class="row-grid">
+          <div>
+            <label for="draftProdName">اسم المنتج / الوجبة</label>
+            <input type="text" id="draftProdName" placeholder="مثال: وجبة رز" />
+          </div>
+          <div>
+            <label for="draftProdPrice">السعر (ج.م)</label>
+            <input type="number" id="draftProdPrice" min="1" placeholder="120" />
+          </div>
+        </div>
+
+        <label for="draftProdFile">اختر صورة المنتج من جهازك</label>
+        <input type="file" id="draftProdFile" accept="image/*" onchange="handleFileSelect(this, 'draftProdData', 'draftProdPreview')" />
+        <input type="hidden" id="draftProdData" />
+        <img id="draftProdPreview" class="preview-img" alt="معاينة صورة المنتج" />
+
+        <div style="margin-top:10px;">
+          <button type="button" class="btn-blue" onclick="addDraftProduct()">إضافة المنتج للقائمة</button>
+        </div>
+
+        <div id="draftProductsList"></div>
+
+        <div style="margin-top:16px;">
+          <button type="button" class="btn-teal" onclick="submitRestaurantApplication()">تقديم ملف المطعم والمنتجات للمراجعة</button>
+        </div>
+        <div id="regAlert"></div>
       </div>
-      <div id="loginAlert"></div>
     </div>
 
     <div id="portalDashboard" class="card" style="display:none;">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding-bottom:12px; border-bottom:1px solid #cbd5e1;">
         <div>
-          <h2 id="dashRestName" style="margin:0; font-size:20px;">اسم المطعم</h2>
-          <div id="dashRestInfo" style="font-size:12px; color:#334155; margin-top:4px;"></div>
+          <h2 id="dashRestName" style="margin:0; font-size:22px;">اسم المطعم</h2>
+          <div id="dashRestInfo" style="font-size:13px; color:#334155; margin-top:4px;"></div>
         </div>
-        <div style="display:flex; gap:8px; align-items:center;">
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
           <span id="dashStatusBadge" class="badge">قيد المراجعة</span>
           <button type="button" class="btn-blue" onclick="reloadCurrentRestaurant()">تحديث البيانات</button>
+          <button type="button" class="btn-gray" onclick="logoutRestaurant()">خروج من الحساب</button>
         </div>
       </div>
 
       <div class="sub-tabs">
-        <button type="button" id="rtab-incoming" class="sub-tab active" onclick="switchRestTab('incoming')">الطلبات الواردة (<span id="cntIncoming">0</span>)</button>
+        <button type="button" id="rtab-products" class="sub-tab active" onclick="switchRestTab('products')">إدارة المنتجات وتوفرها (<span id="cntProducts">0</span>)</button>
+        <button type="button" id="rtab-incoming" class="sub-tab" onclick="switchRestTab('incoming')">الطلبات الواردة (<span id="cntIncoming">0</span>)</button>
         <button type="button" id="rtab-accepted" class="sub-tab" onclick="switchRestTab('accepted')">الطلبات المقبولة (<span id="cntAccepted">0</span>)</button>
         <button type="button" id="rtab-rejected" class="sub-tab" onclick="switchRestTab('rejected')">الطلبات التي لم تُقبل (<span id="cntRejected">0</span>)</button>
-        <button type="button" id="rtab-products" class="sub-tab" onclick="switchRestTab('products')">إضافة وتعديل المنتجات</button>
       </div>
 
-      <div id="rpane-incoming"></div>
-      <div id="rpane-accepted" style="display:none;"></div>
-      <div id="rpane-rejected" style="display:none;"></div>
-
-      <div id="rpane-products" style="display:none;">
-        <div id="addMoreProdSection" style="padding-top:6px;">
-          <h2>إضافة منتج جديد وتعديل المنتجات الحالية</h2>
+      <div id="rpane-products">
+        <div id="addMoreProdSection" style="padding:12px; border:1px solid #cbd5e1; border-radius:10px; background:#f8fafc;">
+          <h2>إضافة منتج جديد للمطعم</h2>
           <div class="row-grid">
             <div>
               <label for="liveProdName">اسم المنتج</label>
-              <input type="text" id="liveProdName" placeholder="اسم المنتج" />
+              <input type="text" id="liveProdName" placeholder="مثال: وجبة رز" />
             </div>
             <div>
               <label for="liveProdPrice">السعر (ج.م)</label>
@@ -1076,68 +1143,11 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
         <div id="dashProductsBox" style="margin-top:14px;"></div>
       </div>
 
+      <div id="rpane-incoming" style="display:none;"></div>
+      <div id="rpane-accepted" style="display:none;"></div>
+      <div id="rpane-rejected" style="display:none;"></div>
+
       <div id="dashAlert"></div>
-    </div>
-
-    <div id="registerCard" class="card">
-      <h2>تقديم ملف مطعم جديد ومنتجاته (مرة واحدة فقط لكل رقم)</h2>
-      <p style="font-size:13px; color:#334155; margin:0 0 10px;">
-        كل رقم هاتف مسموح له بتسجيل ملف واحد فقط، وأنت تختار الرقم السري الخاص بمطعمك بنفسك أثناء التقديم لتستخدمه لاحقاً في الدخول.
-      </p>
-
-      <div class="row-grid">
-        <div>
-          <label for="regPhone">رقم تليفون المطعم (مرة واحدة فقط لكل رقم)</label>
-          <input type="text" id="regPhone" placeholder="01xxxxxxxxx" />
-        </div>
-        <div>
-          <label for="regPin">الرقم السري الذي تختاره للمطعم</label>
-          <input type="text" id="regPin" placeholder="اكتب الرقم السري الخاص بالمطعم" autocomplete="off" />
-        </div>
-        <div>
-          <label for="regName">اسم المطعم أو المتجر</label>
-          <input type="text" id="regName" placeholder="مثال: مطعم الهدى" />
-        </div>
-        <div>
-          <label for="regCategory">التخصص / القسم</label>
-          <input type="text" id="regCategory" placeholder="مشويات، وجبات، كشري، حلويات..." />
-        </div>
-      </div>
-
-      <label for="regLogoFile">اختر صورة / لوجو المطعم من جهازك</label>
-      <input type="file" id="regLogoFile" accept="image/*" onchange="handleFileSelect(this, 'regLogoData', 'regLogoPreview')" />
-      <input type="hidden" id="regLogoData" />
-      <img id="regLogoPreview" class="preview-img" alt="معاينة لوجو المطعم" />
-
-      <hr style="margin:16px 0; border:none; border-top:1px solid #cbd5e1;" />
-
-      <h2>إضافة منتجات المطعم بصورها من الجهاز</h2>
-      <div class="row-grid">
-        <div>
-          <label for="draftProdName">اسم المنتج / الوجبة</label>
-          <input type="text" id="draftProdName" placeholder="مثال: وجبة رز" />
-        </div>
-        <div>
-          <label for="draftProdPrice">السعر (ج.م)</label>
-          <input type="number" id="draftProdPrice" min="1" placeholder="120" />
-        </div>
-      </div>
-
-      <label for="draftProdFile">اختر صورة المنتج من جهازك</label>
-      <input type="file" id="draftProdFile" accept="image/*" onchange="handleFileSelect(this, 'draftProdData', 'draftProdPreview')" />
-      <input type="hidden" id="draftProdData" />
-      <img id="draftProdPreview" class="preview-img" alt="معاينة صورة المنتج" />
-
-      <div style="margin-top:10px;">
-        <button type="button" class="btn-blue" onclick="addDraftProduct()">إضافة المنتج للقائمة</button>
-      </div>
-
-      <div id="draftProductsList"></div>
-
-      <div style="margin-top:16px;">
-        <button type="button" class="btn-teal" onclick="submitRestaurantApplication()">تقديم ملف المطعم والمنتجات للمراجعة</button>
-      </div>
-      <div id="regAlert"></div>
     </div>
   </div>
 
@@ -1146,11 +1156,11 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
     let currentRest = null;
     let currentRestProducts = [];
     let currentRestOrders = [];
-    let activeRestTab = "incoming";
+    let activeRestTab = "products";
 
     function switchRestTab(tabName) {
       activeRestTab = tabName;
-      ["incoming", "accepted", "rejected", "products"].forEach(t => {
+      ["products", "incoming", "accepted", "rejected"].forEach(t => {
         document.getElementById(`rtab-${t}`).classList.toggle("active", t === tabName);
         document.getElementById(`rpane-${t}`).style.display = (t === tabName) ? "block" : "none";
       });
@@ -1267,6 +1277,15 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
       applyPortalPayload(data);
     }
 
+    async function logoutRestaurant() {
+      await fetch("/api/restaurants/logout", { method: "POST" });
+      currentRest = null;
+      currentRestProducts = [];
+      currentRestOrders = [];
+      document.getElementById("portalDashboard").style.display = "none";
+      document.getElementById("authSection").style.display = "block";
+    }
+
     async function reloadCurrentRestaurant() {
       const res = await fetch("/api/restaurants/session");
       if (!res.ok) return;
@@ -1278,6 +1297,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
       currentRest = data.restaurant;
       currentRestProducts = data.products || [];
       currentRestOrders = data.orders || [];
+      document.getElementById("authSection").style.display = "none";
       renderRestaurantDashboard();
     }
 
@@ -1377,6 +1397,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
       const acceptedOrders = currentRestOrders.filter(o => o.restaurant_decision === "accepted");
       const rejectedOrders = currentRestOrders.filter(o => o.restaurant_decision === "rejected");
 
+      document.getElementById("cntProducts").textContent = currentRestProducts.length;
       document.getElementById("cntIncoming").textContent = incomingOrders.length;
       document.getElementById("cntAccepted").textContent = acceptedOrders.length;
       document.getElementById("cntRejected").textContent = rejectedOrders.length;
@@ -1395,25 +1416,47 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
 
       const box = document.getElementById("dashProductsBox");
       if (!currentRestProducts.length) {
-        box.innerHTML = "<div style='color:#475569; font-size:13px;'>لا توجد منتجات مسجلة لهذا المطعم بعد.</div>";
+        box.innerHTML = "<div style='color:#475569; font-size:13px;'>لا توجد منتجات مسجلة لهذا المطعم بعد. أضف منتجاتك من النموذج بالأعلى.</div>";
       } else {
-        box.innerHTML = "<strong>منتجات المطعم (يمكنك تعديل الاسم أو السعر أو حذف المنتج):</strong>" + currentRestProducts.map(p => `
-          <div class="prod-item">
-            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-              ${p.image ? `<img src="${escAttr(p.image)}" alt="" />` : ""}
-              <input type="text" id="pname-${p.id}" value="${escAttr(p.name)}" style="width:160px;" />
-              <input type="number" id="pprice-${p.id}" value="${p.price}" min="1" style="width:95px;" />
+        box.innerHTML = "<strong>قائمة منتجات المطعم (تعديل الاسم أو السعر، تحديد متوفر/غير متوفر، أو حذف):</strong>" + currentRestProducts.map(p => {
+          const isAvail = p.available !== false;
+          return `
+            <div class="prod-item">
+              <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                ${p.image ? `<img src="${escAttr(p.image)}" alt="" />` : ""}
+                <input type="text" id="pname-${p.id}" value="${escAttr(p.name)}" style="width:170px;" />
+                <input type="number" id="pprice-${p.id}" value="${p.price}" min="1" style="width:95px;" />
+              </div>
+              <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                <button type="button" class="${isAvail ? 'btn-green' : 'btn-amber'}" onclick="toggleProductAvailability(${p.id}, ${!isAvail})">
+                  ${isAvail ? "متوفر (اضغط لجعله غير متوفر)" : "غير متوفر (اضغط لجعله متوفر)"}
+                </button>
+                <span class="badge ${p.approved ? "ok" : ""}">${p.approved ? "ظاهر بالمتجر" : "بانتظار الاعتماد"}</span>
+                <button type="button" class="btn-blue" onclick="editRestaurantProduct(${p.id})">حفظ التعديل</button>
+                <button type="button" class="btn-red" onclick="deleteRestaurantProduct(${p.id})">حذف المنتج</button>
+              </div>
             </div>
-            <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-              <span class="badge ${p.approved ? "ok" : ""}">${p.approved ? "ظاهر بالمتجر" : "بانتظار الاعتماد"}</span>
-              <button type="button" class="btn-blue" onclick="editRestaurantProduct(${p.id})">حفظ التعديل</button>
-              <button type="button" class="btn-red" onclick="deleteRestaurantProduct(${p.id})">حذف</button>
-            </div>
-          </div>
-        `).join("");
+          `;
+        }).join("");
       }
 
       switchRestTab(activeRestTab);
+    }
+
+    async function toggleProductAvailability(pid, nextAvailable) {
+      const alertBox = document.getElementById("dashAlert");
+      const res = await fetch(`/api/restaurants/products/${pid}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ available: nextAvailable }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alertBox.innerHTML = `<div class="alert alert-err">${esc(data.error || "تعذر تحديث توفر المنتج")}</div>`;
+        return;
+      }
+      alertBox.innerHTML = `<div class="alert alert-ok">${nextAvailable ? "تم جعل المنتج متوفراً للعملاء." : "تم تعليم المنتج كغير متوفر حالياً."}</div>`;
+      applyPortalPayload(data);
     }
 
     async function decideOrder(oid, decision) {
@@ -2274,6 +2317,7 @@ def restaurant_register_once():
                     "name": pname,
                     "price": pprice,
                     "approved": False,
+                    "available": True,
                     "image": p_img,
                 }
                 products_list.append(p_obj)
@@ -2307,6 +2351,12 @@ def restaurant_login():
 
     session["restaurant_id"] = rest.get("id")
     return jsonify(build_restaurant_portal_payload(data, rest))
+
+
+@app.route("/api/restaurants/logout", methods=["POST"])
+def restaurant_logout():
+    session.pop("restaurant_id", None)
+    return jsonify({"ok": True})
 
 
 @app.route("/api/restaurants/session", methods=["GET"])
@@ -2440,6 +2490,7 @@ def restaurant_add_product():
         "name": name,
         "price": price,
         "approved": is_restaurant_approved(rest),
+        "available": True,
         "image": image,
     }
     products_list.append(p_obj)
@@ -2471,6 +2522,8 @@ def restaurant_update_product(pid):
                         p["price"] = val
                 except (TypeError, ValueError):
                     pass
+            if "available" in payload:
+                p["available"] = bool(payload["available"])
             save_data(data)
             return jsonify(build_restaurant_portal_payload(data, rest))
 
@@ -2512,6 +2565,7 @@ def get_products():
     visible = [
         p for p in data.get("products", [])
         if (p.get("approved", True) is not False)
+        and (p.get("available", True) is not False)
         and (p.get("restaurant_id") is None or int(p.get("restaurant_id")) in approved_rids)
     ]
     return jsonify(visible)
@@ -2548,6 +2602,7 @@ def add_product():
         "name": name,
         "price": price,
         "approved": True,
+        "available": True,
         "image": image,
     }
     data["products"].append(item)
