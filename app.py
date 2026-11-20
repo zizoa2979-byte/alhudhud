@@ -82,6 +82,8 @@ DEFAULT_DATA = {
             "name": "مطعم الهدهد للمأكولات",
             "category": "مشويات ووجبات",
             "area": "نبروه والقرى المجاورة",
+            "phone": "01000000001",
+            "status": "approved",
             "image": _default_svg_data_uri("مطعم الهدهد", "#0f766e"),
         },
         {
@@ -89,6 +91,8 @@ DEFAULT_DATA = {
             "name": "متجر الرياضة والمستلزمات",
             "category": "رياضة ومنوعات",
             "area": "نبروه - المدينة",
+            "phone": "01000000002",
+            "status": "approved",
             "image": _default_svg_data_uri("متجر الرياضة", "#0369a1"),
         },
     ],
@@ -99,6 +103,7 @@ DEFAULT_DATA = {
             "store": "متجر الرياضة والمستلزمات",
             "name": "كورة أديداس تدريب",
             "price": 450,
+            "approved": True,
             "image": _default_svg_data_uri("كورة أديداس", "#0284c7"),
         },
         {
@@ -107,6 +112,7 @@ DEFAULT_DATA = {
             "store": "مطعم الهدهد للمأكولات",
             "name": "كرتونة مياه معدنية",
             "price": 55,
+            "approved": True,
             "image": _default_svg_data_uri("مياه معدنية", "#0d9488"),
         },
         {
@@ -115,6 +121,7 @@ DEFAULT_DATA = {
             "store": "مطعم الهدهد للمأكولات",
             "name": "وجبة فراخ مشوية",
             "price": 140,
+            "approved": True,
             "image": _default_svg_data_uri("وجبة فراخ مشوية", "#b45309"),
         },
     ],
@@ -157,16 +164,27 @@ def normalize_phone(phone):
     return digits
 
 
-def is_valid_image_url(url):
+def is_valid_image_data(url):
     val = str(url or "").strip()
     if not val:
         return False
+    if len(val) > 3_500_000:
+        return False
     return (
-        val.startswith("https://")
+        val.startswith("data:image/png;base64,")
+        or val.startswith("data:image/jpeg;base64,")
+        or val.startswith("data:image/jpg;base64,")
+        or val.startswith("data:image/webp;base64,")
+        or val.startswith("data:image/gif;base64,")
+        or val.startswith("data:image/svg+xml")
+        or val.startswith("https://")
         or val.startswith("http://")
-        or val.startswith("data:image/")
         or val.startswith("/")
     )
+
+
+def _hash_pin(pin):
+    return hashlib.sha256(str(pin or "").encode("utf-8")).hexdigest()
 
 
 def _otp_digest(phone_norm, code):
@@ -220,6 +238,19 @@ def save_data(data):
             json.dump(data, f, ensure_ascii=False, indent=2)
     except OSError:
         pass
+
+
+def is_restaurant_approved(r):
+    st = str(r.get("status") or "approved").strip().lower()
+    return st in ("approved", "مقبول", "نشط", "active")
+
+
+def get_approved_restaurant_ids(data):
+    return {
+        int(r.get("id"))
+        for r in data.get("restaurants", [])
+        if r.get("id") is not None and is_restaurant_approved(r)
+    }
 
 
 def get_otp_sender_phone(data=None):
@@ -343,6 +374,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     </div>
     <div class="hdr-actions">
       <span id="accountPill" class="hdr-pill">ضيف — سجّل حسابك</span>
+      <a href="/restaurant-portal">بوابة المطاعم</a>
       <a href="/admin">لوحة الإدارة</a>
     </div>
   </header>
@@ -358,7 +390,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
   <div id="pane-store" class="tab-pane active">
     <div class="container">
       <div class="card">
-        <h2>المطاعم والمتاجر</h2>
+        <h2>المطاعم والمتاجر المعتمدة</h2>
         <div id="restaurantsStrip" class="rest-strip"></div>
 
         <h2>المنتجات والوجبات المتاحة</h2>
@@ -417,7 +449,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- 4. الحساب وتأكيد كود الواتساب -->
+  <!-- 4. الحساب -->
   <div id="pane-account" class="tab-pane">
     <div class="container">
       <div class="card">
@@ -764,7 +796,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
 
       const extraNote = data.sent_via_api
         ? "تم إرسال الكود تلقائياً إلى واتساب العميل."
-        : "تم إنشاء الكود؛ اضغط إرسال الكود على واتساب العميل لإرساله من رقم الإرسال المعتمد ثم أدخل الكود هنا.";
+        : "تم إنشاء الكود؛ اضغط إرسال الكود على واتساب العميل لإرساله ثم أدخل الكود هنا.";
 
       alertBox.innerHTML = `<div class="alert alert-ok">${esc(data.message || "")}<br/><span style="font-weight:normal;">${esc(extraNote)}</span></div>`;
     }
@@ -910,12 +942,371 @@ CUSTOMER_HTML = """<!DOCTYPE html>
 </html>"""
 
 
+RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>بوابة المطاعم | الهدهد</title>
+  <style>
+    * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
+    body { margin: 0; background: #f1f5f9; color: #0f172a; }
+    header { background: #0f766e; color: #fff; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    header h1 { margin: 0; font-size: 19px; }
+    header a { color: #fff; background: #115e59; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; }
+    .wrap { max-width: 980px; margin: 18px auto; padding: 0 12px; }
+    .card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 16px; }
+    h2 { margin: 0 0 10px; font-size: 17px; color: #0f766e; }
+    label { display: block; font-size: 12px; font-weight: bold; margin: 10px 0 4px; }
+    input, select { width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; background: #fff; }
+    .row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 720px) { .row-grid { grid-template-columns: 1fr; } }
+    button { border: none; border-radius: 8px; padding: 9px 14px; cursor: pointer; font-weight: bold; font-size: 13px; }
+    .btn-teal { background: #0d9488; color: #fff; }
+    .btn-blue { background: #0284c7; color: #fff; }
+    .btn-red { background: #dc2626; color: #fff; }
+    .preview-img { width: 96px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 6px; display: none; }
+    .prod-item { border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px; background: #f8fafc; }
+    .prod-item img { width: 58px; height: 46px; object-fit: cover; border-radius: 6px; }
+    .alert { margin-top: 10px; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; }
+    .alert-ok { background: #dcfce7; color: #166534; }
+    .alert-err { background: #fee2e2; color: #991b1b; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: bold; background: #fef3c7; color: #92400e; }
+    .badge.ok { background: #dcfce7; color: #166534; }
+    .badge.no { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>بوابة المطاعم والمتاجر — الهدهد</h1>
+      <div style="font-size:12px; opacity:0.9;">تسجيل ملف المطعم ومنتجاته بصور من الجهاز مرة واحدة لكل رقم</div>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <a href="/">العودة للمتجر</a>
+      <a href="/admin">إدارة الهدهد</a>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <!-- تسجيل ملف المطعم مرة واحدة لكل رقم -->
+    <div id="registerCard" class="card">
+      <h2>تقديم ملف المطعم ومنتجاته (مرة واحدة فقط لكل رقم)</h2>
+      <p style="font-size:13px; color:#475569; margin:0 0 10px;">
+        كل رقم هاتف مسموح له بفتح وتسجيل ملف واحد فقط باسم مطعم واحد مع رقم سري خاص بالمطعم. بعد التقديم يتم إرسال الطلب للمراجعة والاعتماد.
+      </p>
+
+      <div class="row-grid">
+        <div>
+          <label for="regPhone">رقم تليفون المطعم (مرتبط بالرقم مرة واحدة)</label>
+          <input type="text" id="regPhone" placeholder="01xxxxxxxxx" />
+        </div>
+        <div>
+          <label for="regPin">الرقم السري الخاص بالمطعم</label>
+          <input type="password" id="regPin" placeholder="اختر رقماً سرياً للمطعم" />
+        </div>
+        <div>
+          <label for="regName">اسم المطعم أو المتجر</label>
+          <input type="text" id="regName" placeholder="مثال: مطعم السلام" />
+        </div>
+        <div>
+          <label for="regCategory">التخصص / القسم</label>
+          <input type="text" id="regCategory" placeholder="مشويات، وجبات، كشري، حلويات..." />
+        </div>
+      </div>
+
+      <label for="regLogoFile">اختر صورة / لوجو المطعم من جهازك</label>
+      <input type="file" id="regLogoFile" accept="image/*" onchange="handleFileSelect(this, 'regLogoData', 'regLogoPreview')" />
+      <input type="hidden" id="regLogoData" />
+      <img id="regLogoPreview" class="preview-img" alt="معاينة لوجو المطعم" />
+
+      <hr style="margin:16px 0; border:none; border-top:1px solid #e2e8f0;" />
+
+      <h2>إضافة منتجات المطعم بصورها من الجهاز قبل التقديم</h2>
+      <div class="row-grid">
+        <div>
+          <label for="draftProdName">اسم المنتج / الوجبة</label>
+          <input type="text" id="draftProdName" placeholder="مثال: وجبة نص فرخة" />
+        </div>
+        <div>
+          <label for="draftProdPrice">السعر (ج.م)</label>
+          <input type="number" id="draftProdPrice" min="1" placeholder="120" />
+        </div>
+      </div>
+
+      <label for="draftProdFile">اختر صورة المنتج من جهازك</label>
+      <input type="file" id="draftProdFile" accept="image/*" onchange="handleFileSelect(this, 'draftProdData', 'draftProdPreview')" />
+      <input type="hidden" id="draftProdData" />
+      <img id="draftProdPreview" class="preview-img" alt="معاينة صورة المنتج" />
+
+      <div style="margin-top:10px;">
+        <button type="button" class="btn-blue" onclick="addDraftProduct()">إضافة المنتج للقائمة</button>
+      </div>
+
+      <div id="draftProductsList"></div>
+
+      <div style="margin-top:16px;">
+        <button type="button" class="btn-teal" onclick="submitRestaurantApplication()">تقديم ملف المطعم والمنتجات للمراجعة</button>
+      </div>
+      <div id="regAlert"></div>
+    </div>
+
+    <!-- دخول مطعم مسجل مسبقاً بنفس الرقم والرقم السري -->
+    <div id="loginCard" class="card">
+      <h2>دخول مطعم مسجل مسبقاً (لمتابعة حالة القبول أو إدارة المنتجات)</h2>
+      <div class="row-grid">
+        <div>
+          <label for="loginPhone">رقم التليفون المسجل</label>
+          <input type="text" id="loginPhone" placeholder="01xxxxxxxxx" />
+        </div>
+        <div>
+          <label for="loginPin">الرقم السري للمطعم</label>
+          <input type="password" id="loginPin" placeholder="الرقم السري" />
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <button type="button" class="btn-blue" onclick="loginRestaurant()">دخول إلى ملف المطعم</button>
+      </div>
+      <div id="loginAlert"></div>
+    </div>
+
+    <!-- لوحة المطعم بعد الدخول -->
+    <div id="portalDashboard" class="card" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div>
+          <h2 id="dashRestName" style="margin:0;">اسم المطعم</h2>
+          <div id="dashRestInfo" style="font-size:12px; color:#475569; margin-top:4px;"></div>
+        </div>
+        <span id="dashStatusBadge" class="badge">قيد المراجعة</span>
+      </div>
+
+      <div id="dashProductsBox" style="margin-top:14px;"></div>
+
+      <div id="addMoreProdSection" style="margin-top:16px; padding-top:14px; border-top:1px solid #e2e8f0; display:none;">
+        <h2>إضافة منتج جديد بصورة من الجهاز</h2>
+        <div class="row-grid">
+          <div>
+            <label for="liveProdName">اسم المنتج</label>
+            <input type="text" id="liveProdName" placeholder="اسم المنتج" />
+          </div>
+          <div>
+            <label for="liveProdPrice">السعر (ج.م)</label>
+            <input type="number" id="liveProdPrice" min="1" placeholder="100" />
+          </div>
+        </div>
+        <label for="liveProdFile">اختر صورة المنتج من جهازك</label>
+        <input type="file" id="liveProdFile" accept="image/*" onchange="handleFileSelect(this, 'liveProdData', 'liveProdPreview')" />
+        <input type="hidden" id="liveProdData" />
+        <img id="liveProdPreview" class="preview-img" alt="معاينة" />
+        <div style="margin-top:10px;">
+          <button type="button" class="btn-teal" onclick="addLiveProduct()">حفظ المنتج</button>
+        </div>
+      </div>
+      <div id="dashAlert"></div>
+    </div>
+  </div>
+
+  <script>
+    const draftProducts = [];
+
+    function handleFileSelect(fileInput, hiddenId, previewId) {
+      const file = fileInput.files && fileInput.files[0];
+      const hiddenEl = document.getElementById(hiddenId);
+      const prevEl = document.getElementById(previewId);
+      if (!file) {
+        hiddenEl.value = "";
+        prevEl.style.display = "none";
+        return;
+      }
+      if (file.size > 2_200_000) {
+        alert("حجم الصورة كبير، اختر صورة أصغر من 2 ميجابايت.");
+        fileInput.value = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        hiddenEl.value = ev.target.result || "";
+        if (hiddenEl.value) {
+          prevEl.src = hiddenEl.value;
+          prevEl.style.display = "block";
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function addDraftProduct() {
+      const name = document.getElementById("draftProdName").value.trim();
+      const price = Number(document.getElementById("draftProdPrice").value);
+      const image = document.getElementById("draftProdData").value.trim();
+      if (!name || !price || price <= 0) {
+        alert("أدخل اسم المنتج وسعراً صحيحاً.");
+        return;
+      }
+      draftProducts.push({ name, price, image });
+      document.getElementById("draftProdName").value = "";
+      document.getElementById("draftProdPrice").value = "";
+      document.getElementById("draftProdFile").value = "";
+      document.getElementById("draftProdData").value = "";
+      document.getElementById("draftProdPreview").style.display = "none";
+      renderDraftProducts();
+    }
+
+    function removeDraftProduct(idx) {
+      draftProducts.splice(idx, 1);
+      renderDraftProducts();
+    }
+
+    function renderDraftProducts() {
+      const box = document.getElementById("draftProductsList");
+      if (!draftProducts.length) {
+        box.innerHTML = "<div style='color:#64748b; font-size:12px; margin-top:8px;'>لم تُضف منتجات بعد.</div>";
+        return;
+      }
+      box.innerHTML = draftProducts.map((p, idx) => `
+        <div class="prod-item">
+          <div style="display:flex; align-items:center; gap:10px;">
+            ${p.image ? `<img src="${escAttr(p.image)}" alt="" />` : ""}
+            <div><strong>${esc(p.name)}</strong> — ${p.price} ج.م</div>
+          </div>
+          <button type="button" class="btn-red" onclick="removeDraftProduct(${idx})">حذف</button>
+        </div>
+      `).join("");
+    }
+
+    async function submitRestaurantApplication() {
+      const alertBox = document.getElementById("regAlert");
+      const phone = document.getElementById("regPhone").value.trim();
+      const pin = document.getElementById("regPin").value.trim();
+      const name = document.getElementById("regName").value.trim();
+      const category = document.getElementById("regCategory").value.trim() || "مطعم";
+      const image = document.getElementById("regLogoData").value.trim();
+
+      if (!phone || !pin || !name) {
+        alertBox.innerHTML = '<div class="alert alert-err">أدخل رقم التليفون والرقم السري واسم المطعم.</div>';
+        return;
+      }
+
+      const res = await fetch("/api/restaurants/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, pin, name, category, image, products: draftProducts }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alertBox.innerHTML = `<div class="alert alert-err">${esc(data.error || "تعذر تسجيل المطعم")}</div>`;
+        return;
+      }
+
+      alertBox.innerHTML = '<div class="alert alert-ok">تم تقديم ملف المطعم ومنتجاته بنجاح وهو الآن قيد المراجعة من الإدارة.</div>';
+      renderRestaurantDashboard(data.restaurant, data.products || []);
+    }
+
+    async function loginRestaurant() {
+      const alertBox = document.getElementById("loginAlert");
+      const phone = document.getElementById("loginPhone").value.trim();
+      const pin = document.getElementById("loginPin").value.trim();
+
+      const res = await fetch("/api/restaurants/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, pin }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alertBox.innerHTML = `<div class="alert alert-err">${esc(data.error || "بيانات الدخول غير صحيحة")}</div>`;
+        return;
+      }
+      alertBox.innerHTML = "";
+      renderRestaurantDashboard(data.restaurant, data.products || []);
+    }
+
+    function renderRestaurantDashboard(rest, prods) {
+      const dash = document.getElementById("portalDashboard");
+      dash.style.display = "block";
+      document.getElementById("dashRestName").textContent = rest.name;
+      document.getElementById("dashRestInfo").textContent = `رقم الهاتف: ${rest.phone} • القسم: ${rest.category}`;
+
+      const badge = document.getElementById("dashStatusBadge");
+      const st = rest.status || "pending";
+      const canAddMore = (st === "approved" || st === "pending");
+      document.getElementById("addMoreProdSection").style.display = canAddMore ? "block" : "none";
+
+      if (st === "approved") {
+        badge.textContent = "مقبول ومفعل في المتجر";
+        badge.className = "badge ok";
+      } else if (st === "rejected") {
+        badge.textContent = "مرفوض من الإدارة";
+        badge.className = "badge no";
+      } else {
+        badge.textContent = "قيد المراجعة";
+        badge.className = "badge";
+      }
+
+      const box = document.getElementById("dashProductsBox");
+      if (!prods.length) {
+        box.innerHTML = "<div style='color:#64748b; font-size:13px;'>لا توجد منتجات مسجلة لهذا المطعم بعد.</div>";
+      } else {
+        box.innerHTML = "<strong>منتجات المطعم:</strong>" + prods.map(p => `
+          <div class="prod-item">
+            <div style="display:flex; align-items:center; gap:10px;">
+              ${p.image ? `<img src="${escAttr(p.image)}" alt="" />` : ""}
+              <div><strong>${esc(p.name)}</strong> — ${p.price} ج.م</div>
+            </div>
+            <span class="badge ${p.approved ? "ok" : ""}">${p.approved ? "ظاهر بالمتجر" : "بانتظار الاعتماد"}</span>
+          </div>
+        `).join("");
+      }
+    }
+
+    async function addLiveProduct() {
+      const alertBox = document.getElementById("dashAlert");
+      const name = document.getElementById("liveProdName").value.trim();
+      const price = Number(document.getElementById("liveProdPrice").value);
+      const image = document.getElementById("liveProdData").value.trim();
+      if (!name || !price || price <= 0) {
+        alertBox.innerHTML = '<div class="alert alert-err">أدخل اسم المنتج وسعراً صحيحاً.</div>';
+        return;
+      }
+      const res = await fetch("/api/restaurants/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, price, image }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alertBox.innerHTML = `<div class="alert alert-err">${esc(data.error || "تعذر إضافة المنتج")}</div>`;
+        return;
+      }
+      document.getElementById("liveProdName").value = "";
+      document.getElementById("liveProdPrice").value = "";
+      document.getElementById("liveProdFile").value = "";
+      document.getElementById("liveProdData").value = "";
+      document.getElementById("liveProdPreview").style.display = "none";
+      alertBox.innerHTML = '<div class="alert alert-ok">تم حفظ المنتج.</div>';
+      renderRestaurantDashboard(data.restaurant, data.products || []);
+    }
+
+    function esc(s) {
+      return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function escAttr(s) {
+      return String(s || "").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    renderDraftProducts();
+  </script>
+""" + FOOTER_BLOCK + """
+</body>
+</html>"""
+
+
 ADMIN_HTML = """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>إدارة الهدهد | الطلبات والطيارين والبلاد</title>
+  <title>إدارة الهدهد | الطلبات والمطاعم والطيارين والبلاد</title>
   <style>
     * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
     body { margin: 0; background: #f1f5f9; color: #0f172a; }
@@ -936,12 +1327,20 @@ ADMIN_HTML = """<!DOCTYPE html>
     th { background: #f8fafc; }
     .msg { font-size: 13px; font-weight: bold; margin-top: 8px; color: #0f766e; }
     .thumb { width: 48px; height: 36px; object-fit: cover; border-radius: 6px; border: 1px solid #e2e8f0; }
+    .preview-img { width: 72px; height: 52px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1; display: none; }
+    .st-pill { padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: bold; }
+    .st-pending { background: #fef3c7; color: #92400e; }
+    .st-approved { background: #dcfce7; color: #166534; }
+    .st-rejected { background: #fee2e2; color: #991b1b; }
   </style>
 </head>
 <body>
   <header>
     <h1>لوحة إدارة الهدهد</h1>
-    <a href="/">صفحة العملاء</a>
+    <div style="display:flex; gap:8px;">
+      <a href="/restaurant-portal">بوابة المطاعم</a>
+      <a href="/">صفحة العملاء</a>
+    </div>
   </header>
 
   <div class="wrap">
@@ -991,29 +1390,34 @@ ADMIN_HTML = """<!DOCTYPE html>
       </div>
 
       <div class="card">
-        <h2>إدارة المطاعم والمتاجر بالصور</h2>
+        <h2>إدارة المطاعم والمتاجر وطلبات التعاقد (قبول / رفض + صور من الجهاز)</h2>
         <div class="row-form">
           <input type="text" id="restName" placeholder="اسم المطعم أو المتجر" />
           <input type="text" id="restCat" placeholder="القسم (وجبات، مشويات...)" />
-          <input type="text" id="restImg" placeholder="رابط الصورة (اختياري)" style="min-width:220px;" />
+          <input type="text" id="restPhone" placeholder="رقم هاتف المطعم" style="width:140px;" />
+          <input type="file" id="restImgFile" accept="image/*" onchange="handleFileSelect(this, 'restImgData', 'restImgPreview')" style="max-width:220px;" />
+          <input type="hidden" id="restImgData" />
+          <img id="restImgPreview" class="preview-img" alt="" />
           <button type="button" class="btn-teal" onclick="addRestaurant()">إضافة مطعم</button>
         </div>
         <table>
           <thead>
-            <tr><th>الصورة</th><th>الاسم</th><th>القسم</th><th>إجراء</th></tr>
+            <tr><th>الصورة</th><th>الاسم ورقمه</th><th>القسم</th><th>الحالة</th><th>اعتماد / رفض / حذف</th></tr>
           </thead>
           <tbody id="restaurantsBody"></tbody>
         </table>
       </div>
 
       <div class="card">
-        <h2>إدارة المنتجات والوجبات بالصور والأسعار</h2>
+        <h2>إدارة المنتجات والوجبات والأسعار (صور من الجهاز)</h2>
         <div class="row-form">
           <select id="prodRestaurant"></select>
           <input type="text" id="prodStore" placeholder="اسم القسم / المتجر" value="مطعم الهدهد للمأكولات" />
           <input type="text" id="prodName" placeholder="اسم المنتج أو الوجبة" />
           <input type="number" id="prodPrice" placeholder="السعر" min="1" style="width:110px;" />
-          <input type="text" id="prodImg" placeholder="رابط صورة المنتج (اختياري)" style="min-width:200px;" />
+          <input type="file" id="prodImgFile" accept="image/*" onchange="handleFileSelect(this, 'prodImgData', 'prodImgPreview')" style="max-width:210px;" />
+          <input type="hidden" id="prodImgData" />
+          <img id="prodImgPreview" class="preview-img" alt="" />
           <button type="button" class="btn-teal" onclick="addProduct()">إضافة منتج</button>
         </div>
         <table>
@@ -1078,6 +1482,31 @@ ADMIN_HTML = """<!DOCTYPE html>
 
     function setMsg(t) {
       document.getElementById("adminMsg").textContent = t;
+    }
+
+    function handleFileSelect(fileInput, hiddenId, previewId) {
+      const file = fileInput.files && fileInput.files[0];
+      const hiddenEl = document.getElementById(hiddenId);
+      const prevEl = document.getElementById(previewId);
+      if (!file) {
+        hiddenEl.value = "";
+        prevEl.style.display = "none";
+        return;
+      }
+      if (file.size > 2_200_000) {
+        alert("حجم الصورة كبير، اختر صورة أصغر من 2 ميجابايت.");
+        fileInput.value = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        hiddenEl.value = ev.target.result || "";
+        if (hiddenEl.value) {
+          prevEl.src = hiddenEl.value;
+          prevEl.style.display = "block";
+        }
+      };
+      reader.readAsDataURL(file);
     }
 
     async function loginAdmin() {
@@ -1180,30 +1609,57 @@ ADMIN_HTML = """<!DOCTYPE html>
       ).join("");
 
       const tb = document.getElementById("restaurantsBody");
-      tb.innerHTML = (stateData.restaurants || []).map(r => `
-        <tr>
-          <td>${r.image ? `<img class="thumb" src="${escAttr(r.image)}" alt="" />` : "-"}</td>
-          <td>${esc(r.name)}</td>
-          <td>${esc(r.category || "")}</td>
-          <td><button type="button" class="btn-red" onclick="delRestaurant(${r.id})">حذف</button></td>
-        </tr>
-      `).join("");
+      tb.innerHTML = (stateData.restaurants || []).map(r => {
+        const st = r.status || "approved";
+        let pill = '<span class="st-pill st-approved">مقبول</span>';
+        if (st === "pending") pill = '<span class="st-pill st-pending">قيد المراجعة</span>';
+        if (st === "rejected") pill = '<span class="st-pill st-rejected">مرفوض</span>';
+        return `
+          <tr>
+            <td>${r.image ? `<img class="thumb" src="${escAttr(r.image)}" alt="" />` : "-"}</td>
+            <td><strong>${esc(r.name)}</strong><br/><span style="color:#64748b;font-size:12px;">${esc(r.phone || "")}</span></td>
+            <td>${esc(r.category || "")}</td>
+            <td>${pill}</td>
+            <td>
+              <button type="button" class="btn-teal" onclick="setRestaurantStatus(${r.id}, 'approved')">قبول</button>
+              <button type="button" class="btn-blue" onclick="setRestaurantStatus(${r.id}, 'rejected')">رفض</button>
+              <button type="button" class="btn-red" onclick="delRestaurant(${r.id})">حذف</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function setRestaurantStatus(id, status) {
+      const res = await fetch(`/api/admin/restaurants/${id}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) {
+        setMsg(status === "approved" ? "تم اعتماد المطعم ومنتجاته." : "تم رفض المطعم.");
+        refreshAll();
+      }
     }
 
     async function addRestaurant() {
       const name = document.getElementById("restName").value.trim();
       const category = document.getElementById("restCat").value.trim() || "مطعم";
-      const image = document.getElementById("restImg").value.trim();
+      const phone = document.getElementById("restPhone").value.trim();
+      const image = document.getElementById("restImgData").value.trim();
       const res = await fetch("/api/restaurants", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, category, image }),
+        body: JSON.stringify({ name, category, phone, image }),
       });
       const data = await res.json();
       if (!res.ok) { setMsg(data.error || "خطأ"); return; }
       document.getElementById("restName").value = "";
       document.getElementById("restCat").value = "";
-      document.getElementById("restImg").value = "";
+      document.getElementById("restPhone").value = "";
+      document.getElementById("restImgFile").value = "";
+      document.getElementById("restImgData").value = "";
+      document.getElementById("restImgPreview").style.display = "none";
       setMsg("تمت إضافة المطعم وصورته.");
       refreshAll();
     }
@@ -1315,7 +1771,7 @@ ADMIN_HTML = """<!DOCTYPE html>
       const store = document.getElementById("prodStore").value.trim() || (rSel.options[rSel.selectedIndex]?.dataset.name || "مطعم الهدهد");
       const name = document.getElementById("prodName").value.trim();
       const price = Number(document.getElementById("prodPrice").value);
-      const image = document.getElementById("prodImg").value.trim();
+      const image = document.getElementById("prodImgData").value.trim();
       const res = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1325,7 +1781,9 @@ ADMIN_HTML = """<!DOCTYPE html>
       if (!res.ok) { setMsg(data.error || "خطأ"); return; }
       document.getElementById("prodName").value = "";
       document.getElementById("prodPrice").value = "";
-      document.getElementById("prodImg").value = "";
+      document.getElementById("prodImgFile").value = "";
+      document.getElementById("prodImgData").value = "";
+      document.getElementById("prodImgPreview").style.display = "none";
       setMsg("تمت إضافة المنتج وصورته.");
       refreshAll();
     }
@@ -1383,6 +1841,11 @@ def home():
     return CUSTOMER_HTML
 
 
+@app.route("/restaurant-portal")
+def restaurant_portal_page():
+    return RESTAURANT_PORTAL_HTML
+
+
 @app.route("/admin")
 def admin_page():
     return ADMIN_HTML
@@ -1433,9 +1896,33 @@ def update_admin_settings():
     return jsonify({"ok": True, "settings": settings})
 
 
+@app.route("/api/admin/restaurants/<int:rid>/status", methods=["PUT"])
+@admin_required
+def update_restaurant_status(rid):
+    payload = request.get_json(silent=True) or {}
+    new_status = str(payload.get("status", "")).strip().lower()
+    if new_status not in ("pending", "approved", "rejected"):
+        return jsonify({"error": "حالة غير صحيحة"}), 400
+
+    data = load_data()
+    target = next((r for r in data.get("restaurants", []) if int(r.get("id", -1)) == rid), None)
+    if not target:
+        return jsonify({"error": "المطعم غير موجود"}), 404
+
+    target["status"] = new_status
+    if new_status == "approved":
+        for p in data.get("products", []):
+            if p.get("restaurant_id") == rid:
+                p["approved"] = True
+    save_data(data)
+    return jsonify({"ok": True, "restaurant": target})
+
+
 @app.route("/api/restaurants", methods=["GET"])
 def get_restaurants():
-    return jsonify(load_data().get("restaurants", []))
+    data = load_data()
+    approved = [r for r in data.get("restaurants", []) if is_restaurant_approved(r)]
+    return jsonify(approved)
 
 
 @app.route("/api/restaurants", methods=["POST"])
@@ -1444,10 +1931,11 @@ def add_restaurant():
     payload = request.get_json(silent=True) or {}
     name = str(payload.get("name", "")).strip()
     category = str(payload.get("category", "مطعم")).strip() or "مطعم"
+    phone = str(payload.get("phone", "")).strip()
     raw_img = str(payload.get("image", "")).strip()
     if not name:
         return jsonify({"error": "أدخل اسم المطعم أو المتجر"}), 400
-    image = raw_img if is_valid_image_url(raw_img) else _default_svg_data_uri(name, "#0f766e")
+    image = raw_img if is_valid_image_data(raw_img) else _default_svg_data_uri(name, "#0f766e")
 
     data = load_data()
     restaurants = data.get("restaurants", [])
@@ -1457,12 +1945,166 @@ def add_restaurant():
         "name": name,
         "category": category,
         "area": "نبروه والقرى المجاورة",
+        "phone": phone,
+        "status": "approved",
         "image": image,
     }
     restaurants.append(item)
     data["restaurants"] = restaurants
     save_data(data)
     return jsonify(item), 201
+
+
+@app.route("/api/restaurants/register", methods=["POST"])
+def restaurant_register_once():
+    """
+    يسجل ملف المطعم ومنتجاته بصورها مرة واحدة فقط لكل رقم هاتف،
+    ويرفعه للمراجعة (pending) لحين موافقة الإدارة.
+    """
+    payload = request.get_json(silent=True) or {}
+    phone_raw = str(payload.get("phone", "")).strip()
+    phone_norm = normalize_phone(phone_raw)
+    pin = str(payload.get("pin", "")).strip()
+    name = str(payload.get("name", "")).strip()
+    category = str(payload.get("category", "مطعم")).strip() or "مطعم"
+    raw_img = str(payload.get("image", "")).strip()
+    prods_in = payload.get("products") or []
+
+    if len(phone_norm) < 9 or not pin or not name:
+        return jsonify({"error": "أدخل رقم التليفون والرقم السري واسم المطعم"}), 400
+
+    data = load_data()
+    restaurants = data.get("restaurants", [])
+
+    # منع تسجيل نفس الرقم أكثر من مرة لأي مطعم آخر
+    existing_by_phone = next(
+        (r for r in restaurants if normalize_phone(r.get("phone")) == phone_norm),
+        None,
+    )
+    if existing_by_phone:
+        return jsonify({
+            "error": "هذا الرقم مسجل بالفعل لملف مطعم ولا يمكن تسجيله مرة أخرى باسم مطعم آخر."
+        }), 409
+
+    next_id = max([int(x.get("id", 0)) for x in restaurants], default=0) + 1
+    image = raw_img if is_valid_image_data(raw_img) else _default_svg_data_uri(name, "#0f766e")
+
+    rest_obj = {
+        "id": next_id,
+        "name": name,
+        "category": category,
+        "area": "نبروه والقرى المجاورة",
+        "phone": phone_raw,
+        "phone_norm": phone_norm,
+        "pin_hash": _hash_pin(pin),
+        "status": "pending",
+        "image": image,
+    }
+    restaurants.append(rest_obj)
+    data["restaurants"] = restaurants
+
+    created_products = []
+    if isinstance(prods_in, list):
+        products_list = data.get("products", [])
+        next_pid = max([int(x.get("id", 0)) for x in products_list], default=0) + 1
+        for p in prods_in:
+            pname = str(p.get("name", "")).strip()
+            try:
+                pprice = int(float(p.get("price", 0)))
+            except (TypeError, ValueError):
+                continue
+            if pname and pprice > 0:
+                p_raw_img = str(p.get("image", "")).strip()
+                p_img = p_raw_img if is_valid_image_data(p_raw_img) else _default_svg_data_uri(pname, "#b45309")
+                p_obj = {
+                    "id": next_pid,
+                    "restaurant_id": next_id,
+                    "store": name,
+                    "name": pname,
+                    "price": pprice,
+                    "approved": False,
+                    "image": p_img,
+                }
+                products_list.append(p_obj)
+                created_products.append(p_obj)
+                next_pid += 1
+        data["products"] = products_list
+
+    save_data(data)
+    session["restaurant_id"] = next_id
+
+    safe_rest = {k: v for k, v in rest_obj.items() if k != "pin_hash"}
+    return jsonify({"ok": True, "restaurant": safe_rest, "products": created_products}), 201
+
+
+@app.route("/api/restaurants/login", methods=["POST"])
+def restaurant_login():
+    payload = request.get_json(silent=True) or {}
+    phone_norm = normalize_phone(payload.get("phone", ""))
+    pin = str(payload.get("pin", "")).strip()
+    if not phone_norm or not pin:
+        return jsonify({"error": "أدخل رقم التليفون والرقم السري"}), 400
+
+    data = load_data()
+    rest = next(
+        (r for r in data.get("restaurants", []) if normalize_phone(r.get("phone")) == phone_norm),
+        None,
+    )
+    if not rest:
+        return jsonify({"error": "هذا الرقم غير مسجل لأي مطعم"}), 404
+
+    stored_hash = rest.get("pin_hash")
+    if stored_hash and not hmac.compare_digest(stored_hash, _hash_pin(pin)):
+        return jsonify({"error": "الرقم السري للمطعم غير صحيح"}), 401
+
+    session["restaurant_id"] = rest.get("id")
+    prods = [p for p in data.get("products", []) if p.get("restaurant_id") == rest.get("id")]
+    safe_rest = {k: v for k, v in rest.items() if k != "pin_hash"}
+    return jsonify({"ok": True, "restaurant": safe_rest, "products": prods})
+
+
+@app.route("/api/restaurants/products", methods=["POST"])
+def restaurant_add_product():
+    rid = session.get("restaurant_id")
+    if not rid:
+        return jsonify({"error": "سجل دخول المطعم أولاً"}), 401
+
+    data = load_data()
+    rest = next((r for r in data.get("restaurants", []) if int(r.get("id", -1)) == int(rid)), None)
+    if not rest:
+        return jsonify({"error": "المطعم غير موجود"}), 404
+    if str(rest.get("status")) == "rejected":
+        return jsonify({"error": "هذا الملف مرفوض من الإدارة"}), 403
+
+    payload = request.get_json(silent=True) or {}
+    name = str(payload.get("name", "")).strip()
+    raw_img = str(payload.get("image", "")).strip()
+    try:
+        price = int(float(payload.get("price", 0)))
+    except (TypeError, ValueError):
+        return jsonify({"error": "سعر غير صحيح"}), 400
+    if not name or price <= 0:
+        return jsonify({"error": "أدخل اسم المنتج وسعراً أكبر من صفر"}), 400
+
+    image = raw_img if is_valid_image_data(raw_img) else _default_svg_data_uri(name, "#b45309")
+    products_list = data.get("products", [])
+    next_pid = max([int(x.get("id", 0)) for x in products_list], default=0) + 1
+    p_obj = {
+        "id": next_pid,
+        "restaurant_id": rest.get("id"),
+        "store": rest.get("name"),
+        "name": name,
+        "price": price,
+        "approved": is_restaurant_approved(rest),
+        "image": image,
+    }
+    products_list.append(p_obj)
+    data["products"] = products_list
+    save_data(data)
+
+    prods = [p for p in products_list if p.get("restaurant_id") == rest.get("id")]
+    safe_rest = {k: v for k, v in rest.items() if k != "pin_hash"}
+    return jsonify({"ok": True, "restaurant": safe_rest, "products": prods}), 201
 
 
 @app.route("/api/restaurants/<int:rid>", methods=["DELETE"])
@@ -1476,7 +2118,14 @@ def delete_restaurant(rid):
 
 @app.route("/api/products", methods=["GET"])
 def get_products():
-    return jsonify(load_data()["products"])
+    data = load_data()
+    approved_rids = get_approved_restaurant_ids(data)
+    visible = [
+        p for p in data.get("products", [])
+        if (p.get("approved", True) is not False)
+        and (p.get("restaurant_id") is None or int(p.get("restaurant_id")) in approved_rids)
+    ]
+    return jsonify(visible)
 
 
 @app.route("/api/products", methods=["POST"])
@@ -1499,7 +2148,7 @@ def add_product():
     except (TypeError, ValueError):
         restaurant_id = None
 
-    image = raw_img if is_valid_image_url(raw_img) else _default_svg_data_uri(name, "#b45309")
+    image = raw_img if is_valid_image_data(raw_img) else _default_svg_data_uri(name, "#b45309")
 
     data = load_data()
     next_id = max([int(x.get("id", 0)) for x in data["products"]], default=0) + 1
@@ -1509,6 +2158,7 @@ def add_product():
         "store": store,
         "name": name,
         "price": price,
+        "approved": True,
         "image": image,
     }
     data["products"].append(item)
@@ -1531,7 +2181,7 @@ def update_product(pid):
                     p["price"] = val
                 except (TypeError, ValueError):
                     return jsonify({"error": "سعر غير صحيح"}), 400
-            if "image" in payload and is_valid_image_url(payload["image"]):
+            if "image" in payload and is_valid_image_data(payload["image"]):
                 p["image"] = str(payload["image"]).strip()
             save_data(data)
             return jsonify(p)
