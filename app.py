@@ -58,7 +58,7 @@ def _default_svg_data_uri(label, bg="#f97316", fg="#ffffff"):
 
 
 FOOTER_BLOCK = f"""
-<footer style="text-align: center; padding: 20px 12px 86px; margin-top: 28px; font-size: 13px; color: #64748b; border-top: 1px solid rgba(148, 163, 184, 0.25); direction: rtl;">
+<footer style="text-align: center; padding: 20px 12px 92px; margin-top: 28px; font-size: 13px; color: #64748b; border-top: 1px solid rgba(148, 163, 184, 0.25); direction: rtl;">
   <div>تم تصميم الموقع بواسطة <strong>{OWNER_NAME}</strong></div>
   <div style="margin-top: 6px;">
     للتواصل: <strong>{OWNER_PHONE}</strong> |
@@ -75,6 +75,11 @@ DEFAULT_DATA = {
         "free_first_order_enabled": True,
         "free_first_order_discount": FREE_FIRST_ORDER_DISCOUNT,
         "free_first_order_label": "عرض أول طلب مجاناً",
+        "supermarket_title": "قسم السوبر ماركت (اكتب اللي محتاجه وأرفق صورة لو معاك)",
+        "supermarket_placeholder": "مثال: لبن، زيت، بامبرز، سكر، أو أي غرض من السوبر ماركت...",
+        "pharmacy_med_title": "قسم الصيدليات — الأدوية والتركيز",
+        "pharmacy_other_title": "حاجات الصيدلية غير العلاج (مستحضرات تجميل، بامبرز، عناية يومية...)",
+        "pharmacy_other_placeholder": "اكتب اسم الحاجة اللي محتاجها من الصيدلية غير العلاج...",
     },
     "restaurants": [
         {
@@ -340,7 +345,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
   <title>الهدهد | توصيل نبروه والقرى المحيطة</title>
   <style>
     * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
-    body { margin: 0; background: linear-gradient(180deg, #fff7ed 0%, #fdf4ff 45%, #f0f9ff 100%); color: #1e1b4b; padding-bottom: 88px; min-height: 100vh; }
+    body { margin: 0; background: linear-gradient(180deg, #fff7ed 0%, #fdf4ff 45%, #f0f9ff 100%); color: #1e1b4b; padding-bottom: 92px; min-height: 100vh; }
     header { background: linear-gradient(120deg, #f97316, #ec4899, #6366f1); color: #fff; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 25; box-shadow: 0 6px 20px rgba(99, 102, 241, 0.22); }
     header h1 { margin: 0; font-size: 20px; display: flex; align-items: center; gap: 8px; }
     .live-dot { width: 9px; height: 9px; border-radius: 999px; background: #fde047; box-shadow: 0 0 0 4px rgba(253,224,71,0.35); animation: pulseDot 1.8s infinite; }
@@ -351,7 +356,6 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     header a { color: #fff; background: rgba(30, 27, 75, 0.28); text-decoration: none; padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: bold; transition: transform 0.15s ease, background 0.15s ease; }
     header a:hover { background: rgba(30, 27, 75, 0.42); transform: translateY(-1px); }
 
-    /* شريط تتبع الأوردر الثابت بالخط والنقاط في الأعلى */
     .live-tracker-strip { max-width: 1120px; margin: 12px auto 0; padding: 0 12px; display: none; }
     .live-tracker-strip.show { display: block; }
     .tracker-banner-card { background: #ffffff; border: 2px solid #f97316; border-radius: 16px; padding: 14px 16px; box-shadow: 0 8px 22px rgba(249, 115, 22, 0.14); }
@@ -398,7 +402,6 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     label { display: block; font-size: 12px; font-weight: bold; margin: 8px 0 4px; color: #312e81; }
     input, select, textarea { width: 100%; padding: 9px 11px; border: 1px solid #ddd6fe; border-radius: 10px; font-size: 13px; background: #fff; color: #1e1b4b; }
 
-    /* صناديق الأقسام الخاصة: سوبر ماركت، صيدليات، ومنتجات إضافية */
     .special-box { border-radius: 14px; padding: 13px; margin-top: 12px; border: 1px solid #e2e8f0; }
     .box-super { background: #f0fdf4; border-color: #bbf7d0; }
     .box-pharma { background: #fdf2f8; border-color: #fbcfe8; }
@@ -417,16 +420,31 @@ CUSTOMER_HTML = """<!DOCTYPE html>
 
     .reward-card { background: linear-gradient(120deg, #fdf2f8, #eef2ff); border: 1px solid #fbcfe8; border-radius: 14px; padding: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-top: 1px solid #e9d5ff; display: grid; grid-template-columns: repeat(5, 1fr); z-index: 40; box-shadow: 0 -4px 16px rgba(99, 102, 241, 0.12); }
-    .nav-tab { background: transparent; border-radius: 0; padding: 10px 2px; color: #64748b; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 2px; transition: transform 0.15s ease, color 0.15s ease; }
-    .nav-tab.active { color: #db2777; background: #fdf2f8; border-top: 3px solid #ec4899; }
-    .nav-tab.bump { transform: scale(1.12); color: #f97316; }
+    /* الشريط السفلي بألوان وأيقونات مميزة لكل تبويب */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-top: 2px solid #f1e8ff; display: grid; grid-template-columns: repeat(5, 1fr); z-index: 40; box-shadow: 0 -6px 20px rgba(30, 27, 75, 0.12); padding: 4px 4px 6px; gap: 3px; }
+    .nav-tab { background: #f8fafc; border-radius: 12px; padding: 7px 2px; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease; }
+    .nav-icon { font-size: 16px; line-height: 1.1; }
+    .nav-label { font-size: 10px; font-weight: bold; }
+
+    .nav-store { color: #c2410c; background: #fff7ed; }
+    .nav-cart { color: #be185d; background: #fdf2f8; }
+    .nav-orders { color: #0369a1; background: #f0f9ff; }
+    .nav-account { color: #6d28d9; background: #f5f3ff; }
+    .nav-settings { color: #b45309; background: #fffbeb; }
+
+    .nav-store.active { background: linear-gradient(135deg, #f97316, #fb923c); color: #fff; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35); transform: translateY(-2px); }
+    .nav-cart.active { background: linear-gradient(135deg, #ec4899, #f472b6); color: #fff; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.35); transform: translateY(-2px); }
+    .nav-orders.active { background: linear-gradient(135deg, #0ea5e9, #38bdf8); color: #fff; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.35); transform: translateY(-2px); }
+    .nav-account.active { background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: #fff; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35); transform: translateY(-2px); }
+    .nav-settings.active { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #fff; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35); transform: translateY(-2px); }
+
+    .nav-tab.bump { transform: scale(1.14) translateY(-2px); }
+
     .tab-pane { display: none; }
     .tab-pane.active { display: block; animation: fadeIn 0.2s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
     .setting-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
 
-    /* مربع تأكيد الإضافة للسلة في منتصف الشاشة */
     .cart-toast-backdrop { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 90; pointer-events: none; padding: 16px; }
     .cart-toast-backdrop.show { display: flex; }
     .cart-toast-box { background: rgba(30, 27, 75, 0.95); color: #ffffff; border-radius: 18px; padding: 18px 22px; min-width: 215px; max-width: 300px; text-align: center; box-shadow: 0 14px 34px rgba(30, 27, 75, 0.32); transform: scale(0.82); opacity: 0; transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 0.2s ease; }
@@ -449,7 +467,6 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     </div>
   </header>
 
-  <!-- شريط تتبع الأوردر التلقائي بالخط والنقاط (يظهر تلقائياً ويحفظ في المتصفح) -->
   <div id="liveTrackerStrip" class="live-tracker-strip">
     <div id="liveTrackerContent" class="tracker-banner-card"></div>
   </div>
@@ -500,31 +517,31 @@ CUSTOMER_HTML = """<!DOCTYPE html>
         <h2>سلة الطلب وتحديد البلد</h2>
         <div id="cartBox">السلة فارغة حالياً.</div>
 
-        <!-- 1. قسم السوبر ماركت: يكتب العميل اسم المنتج ويحط صورة لو حابب -->
+        <!-- قسم السوبر ماركت الثابت والقابل للتعديل من الإدارة -->
         <div class="special-box box-super">
-          <h3>قسم السوبر ماركت (اكتب اسم المنتج وأرفق صورة إن وجدت)</h3>
+          <h3 id="superTitleHeading">قسم السوبر ماركت (اكتب اللي محتاجه وأرفق صورة لو معاك)</h3>
           <div class="two-col">
             <div>
-              <label for="superProdName">اسم منتج السوبر ماركت</label>
-              <input type="text" id="superProdName" placeholder="مثال: لبن جهينة / زيت / بسكويت..." />
+              <label for="superProdName">الطلب / المنتج من السوبر ماركت</label>
+              <input type="text" id="superProdName" placeholder="مثال: لبن، زيت، بامبرز، أو أي غرض من السوبر ماركت..." />
             </div>
             <div>
-              <label for="superProdFile">صورة المنتج (اختياري)</label>
+              <label for="superProdFile">إرفاق صورة للمنتج (اختياري)</label>
               <input type="file" id="superProdFile" accept="image/*" onchange="handleCustomImage(this, 'superProdImg')" />
               <input type="hidden" id="superProdImg" />
             </div>
           </div>
           <div style="margin-top:8px;">
-            <button type="button" class="btn-blue" onclick="addCustomSupermarketItem()">إضافة منتج السوبر ماركت للسلة</button>
+            <button type="button" class="btn-blue" onclick="addCustomSupermarketItem()">إضافة للسلة</button>
           </div>
         </div>
 
-        <!-- 2. قسم الصيدليات: علاج + تركيز + مستحضرات تجميل ومنتجات أخرى من الصيدلية -->
+        <!-- قسم الصيدليات الثابت والقابل للتعديل من الإدارة -->
         <div class="special-box box-pharma">
-          <h3>قسم الصيدليات (علاج وتركيز + مستحضرات تجميل ومنتجات أخرى)</h3>
+          <h3 id="pharmaMedHeading">قسم الصيدليات — الأدوية والتركيز</h3>
           <div class="two-col">
             <div>
-              <label for="medName">اسم العلاج / الدواء</label>
+              <label for="medName">اسم الدواء / العلاج</label>
               <input type="text" id="medName" placeholder="مثال: بنادول / أوجمنتين..." />
             </div>
             <div>
@@ -532,29 +549,19 @@ CUSTOMER_HTML = """<!DOCTYPE html>
               <input type="text" id="medDosage" placeholder="مثال: 500mg / 1g / شراب..." />
             </div>
           </div>
-          <label for="medFile">صورة الروشتة أو علبة الدواء (اختياري)</label>
+          <label for="medFile">إضافة صورة للدواء أو الروشتة (اختياري)</label>
           <input type="file" id="medFile" accept="image/*" onchange="handleCustomImage(this, 'medImg')" />
           <input type="hidden" id="medImg" />
           <div style="margin-top:8px;">
-            <button type="button" class="btn-pink" onclick="addPharmacyMedicineItem()">إضافة العلاج والتركيز للسلة</button>
+            <button type="button" class="btn-pink" onclick="addPharmacyMedicineItem()">إضافة الدواء للسلة</button>
           </div>
 
           <hr style="margin:12px 0; border:none; border-top:1px dashed #f472b6;" />
 
-          <label for="cosmeticOtherName">مستحضرات تجميل ومنتجات أخرى من الصيدلية (مزيل عرق، شامبو، عناية شخصية...)</label>
-          <input type="text" id="cosmeticOtherName" placeholder="اكتب المنتج اللي محتاجه غير العلاج..." />
+          <label id="pharmaOtherLabel" for="cosmeticOtherName">حاجات الصيدلية غير العلاج (مستحضرات تجميل، بامبرز، عناية يومية...)</label>
+          <input type="text" id="cosmeticOtherName" placeholder="اكتب اسم الحاجة اللي محتاجها من الصيدلية غير العلاج..." />
           <div style="margin-top:8px;">
-            <button type="button" class="btn-pink" onclick="addPharmacyOtherItem()">إضافة منتج صيدلية آخر للسلة</button>
-          </div>
-        </div>
-
-        <!-- 3. المنتجات الإضافية / طلب خاص -->
-        <div class="special-box box-extra">
-          <h3>منتجات إضافية / طلب خاص (مثل عيش من مخبز أو أي طلب غير موجود)</h3>
-          <label for="extraItemText">اكتب الطلب الإضافي بالتفصيل</label>
-          <input type="text" id="extraItemText" placeholder="مثال: 20 رغيف عيش بلدي من المخبز أو أي غرض إضافي..." />
-          <div style="margin-top:8px;">
-            <button type="button" class="btn-amber" onclick="addExtraCustomItem()">إضافة الطلب الإضافي للسلة</button>
+            <button type="button" class="btn-pink" onclick="addPharmacyOtherItem()">إضافة للسلة</button>
           </div>
         </div>
 
@@ -671,20 +678,25 @@ CUSTOMER_HTML = """<!DOCTYPE html>
   </div>
 
   <nav class="bottom-nav">
-    <button type="button" id="tab-store" class="nav-tab active" onclick="switchTab('store')">
-      <span>المتجر</span>
+    <button type="button" id="tab-store" class="nav-tab nav-store active" onclick="switchTab('store')">
+      <span class="nav-icon">🏪</span>
+      <span class="nav-label">المتجر</span>
     </button>
-    <button type="button" id="tab-cart" class="nav-tab" onclick="switchTab('cart')">
-      <span>السلة (<span id="bottomCartCount">0</span>)</span>
+    <button type="button" id="tab-cart" class="nav-tab nav-cart" onclick="switchTab('cart')">
+      <span class="nav-icon">🛒</span>
+      <span class="nav-label">السلة (<span id="bottomCartCount">0</span>)</span>
     </button>
-    <button type="button" id="tab-orders" class="nav-tab" onclick="switchTab('orders')">
-      <span>طلباتي</span>
+    <button type="button" id="tab-orders" class="nav-tab nav-orders" onclick="switchTab('orders')">
+      <span class="nav-icon">📦</span>
+      <span class="nav-label">طلباتي</span>
     </button>
-    <button type="button" id="tab-account" class="nav-tab" onclick="switchTab('account')">
-      <span>الحساب</span>
+    <button type="button" id="tab-account" class="nav-tab nav-account" onclick="switchTab('account')">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label">الحساب</span>
     </button>
-    <button type="button" id="tab-settings" class="nav-tab" onclick="switchTab('settings')">
-      <span>الإعدادات</span>
+    <button type="button" id="tab-settings" class="nav-tab nav-settings" onclick="switchTab('settings')">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">الإعدادات</span>
     </button>
   </nav>
 
@@ -746,21 +758,20 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     function pushCustomItem(itemObj) {
       customCartItems.push(itemObj);
       renderCart();
-      const totalItems = getTotalCartCount();
-      showAddedToast(itemObj.name, totalItems);
+      showAddedToast(itemObj.name, getTotalCartCount());
     }
 
     function addCustomSupermarketItem() {
       const name = document.getElementById("superProdName").value.trim();
       const img = document.getElementById("superProdImg").value.trim();
       if (!name) {
-        alert("اكتب اسم منتج السوبر ماركت أولاً.");
+        alert("اكتب اللي محتاجه من السوبر ماركت أولاً.");
         return;
       }
       pushCustomItem({
         cid: "c_" + (nextCustomSeq++),
         name: `سوبر ماركت: ${name}`,
-        store: "سوبر ماركت (طلب بالاسم)",
+        store: "السوبر ماركت",
         restaurant_id: null,
         price: 0,
         qty: 1,
@@ -776,14 +787,14 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       const dosage = document.getElementById("medDosage").value.trim();
       const img = document.getElementById("medImg").value.trim();
       if (!med) {
-        alert("اكتب اسم العلاج أولاً.");
+        alert("اكتب اسم الدواء أولاً.");
         return;
       }
-      const label = dosage ? `علاج: ${med} (تركيز: ${dosage})` : `علاج: ${med}`;
+      const label = dosage ? `صيدلية (دواء): ${med} — تركيز: ${dosage}` : `صيدلية (دواء): ${med}`;
       pushCustomItem({
         cid: "c_" + (nextCustomSeq++),
         name: label,
-        store: "صيدلية • أدوية",
+        store: "الصيدليات • أدوية",
         restaurant_id: null,
         price: 0,
         qty: 1,
@@ -798,37 +809,19 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     function addPharmacyOtherItem() {
       const txt = document.getElementById("cosmeticOtherName").value.trim();
       if (!txt) {
-        alert("اكتب مستحضر التجميل أو منتج الصيدلية الآخر أولاً.");
+        alert("اكتب اسم الحاجة اللي محتاجها من الصيدلية أولاً.");
         return;
       }
       pushCustomItem({
         cid: "c_" + (nextCustomSeq++),
-        name: `صيدلية (مستحضرات تجميل ومنتجات أخرى): ${txt}`,
-        store: "صيدلية • عناية ومنتجات أخرى",
+        name: `صيدلية (غير العلاج): ${txt}`,
+        store: "الصيدليات • مستحضرات ومنتجات أخرى",
         restaurant_id: null,
         price: 0,
         qty: 1,
         image: "",
       });
       document.getElementById("cosmeticOtherName").value = "";
-    }
-
-    function addExtraCustomItem() {
-      const txt = document.getElementById("extraItemText").value.trim();
-      if (!txt) {
-        alert("اكتب المنتج الإضافي أو الطلب الخاص أولاً.");
-        return;
-      }
-      pushCustomItem({
-        cid: "c_" + (nextCustomSeq++),
-        name: `إضافي: ${txt}`,
-        store: "منتجات إضافية / طلب خاص",
-        restaurant_id: null,
-        price: 0,
-        qty: 1,
-        image: "",
-      });
-      document.getElementById("extraItemText").value = "";
     }
 
     function removeCustomItem(cid) {
@@ -960,6 +953,25 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       }
     }
 
+    function applySectionLabels(sections) {
+      if (!sections) return;
+      if (sections.supermarket_title) {
+        document.getElementById("superTitleHeading").textContent = sections.supermarket_title;
+      }
+      if (sections.supermarket_placeholder) {
+        document.getElementById("superProdName").placeholder = sections.supermarket_placeholder;
+      }
+      if (sections.pharmacy_med_title) {
+        document.getElementById("pharmaMedHeading").textContent = sections.pharmacy_med_title;
+      }
+      if (sections.pharmacy_other_title) {
+        document.getElementById("pharmaOtherLabel").textContent = sections.pharmacy_other_title;
+      }
+      if (sections.pharmacy_other_placeholder) {
+        document.getElementById("cosmeticOtherName").placeholder = sections.pharmacy_other_placeholder;
+      }
+    }
+
     async function loadInitial() {
       const [rRes, pRes, zRes, meRes] = await Promise.all([
         fetch("/api/restaurants"),
@@ -974,6 +986,9 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       currentCustomer = meData.customer || null;
       if (meData.promo) {
         promoInfo = meData.promo;
+      }
+      if (meData.sections) {
+        applySectionLabels(meData.sections);
       }
 
       const promoBox = document.getElementById("promoBox");
@@ -1974,8 +1989,11 @@ ADMIN_HTML = """<!DOCTYPE html>
     .wrap { max-width: 1160px; margin: 18px auto; padding: 0 12px; }
     .card { background: #fff; border-radius: 16px; padding: 15px; box-shadow: 0 6px 20px rgba(30,27,75,0.06); margin-bottom: 16px; border: 1px solid #f1e8ff; }
     h2 { margin: 0 0 10px; font-size: 17px; color: #db2777; }
+    label { display: block; font-size: 12px; font-weight: bold; margin: 8px 0 4px; color: #312e81; }
     .row-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
     input, select { padding: 8px 10px; border: 1px solid #ddd6fe; border-radius: 10px; font-size: 13px; background: #fff; color: #1e1b4b; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 680px) { .two-col { grid-template-columns: 1fr; } }
     button { border: none; border-radius: 10px; padding: 8px 12px; cursor: pointer; font-weight: bold; font-size: 12px; }
     .btn-teal { background: linear-gradient(120deg, #f97316, #ec4899); color: #fff; }
     .btn-blue { background: #6366f1; color: #fff; }
@@ -2025,6 +2043,30 @@ ADMIN_HTML = """<!DOCTYPE html>
             <option value="false">عرض أول طلب مجاناً: متوقف</option>
           </select>
           <button type="button" class="btn-blue" onclick="saveSettings()">حفظ الإعدادات</button>
+        </div>
+
+        <hr style="margin:14px 0; border:none; border-top:1px dashed #e9d5ff;" />
+        <h2>تعديل نصوص وعناوين السوبر ماركت والصيدليات (تبقى ثابتة وقابلة للتغيير من هنا)</h2>
+        <div class="two-col">
+          <div>
+            <label for="cfgSuperTitle">عنوان قسم السوبر ماركت</label>
+            <input type="text" id="cfgSuperTitle" />
+          </div>
+          <div>
+            <label for="cfgSuperPlaceholder">نص الإرشاد في خانة السوبر ماركت</label>
+            <input type="text" id="cfgSuperPlaceholder" />
+          </div>
+          <div>
+            <label for="cfgPharmaMedTitle">عنوان قسم الأدوية والتركيز</label>
+            <input type="text" id="cfgPharmaMedTitle" />
+          </div>
+          <div>
+            <label for="cfgPharmaOtherTitle">عنوان حاجات الصيدلية غير العلاج</label>
+            <input type="text" id="cfgPharmaOtherTitle" />
+          </div>
+        </div>
+        <div style="margin-top:10px;">
+          <button type="button" class="btn-teal" onclick="saveSectionLabels()">حفظ نصوص السوبر ماركت والصيدليات</button>
         </div>
       </div>
 
@@ -2207,6 +2249,10 @@ ADMIN_HTML = """<!DOCTYPE html>
       document.getElementById("cfgOtpSender").value = cfg.otp_sender_phone || "0102509044";
       document.getElementById("cfgPromoDiscount").value = cfg.free_first_order_discount ?? 35;
       document.getElementById("cfgPromoEnabled").value = cfg.free_first_order_enabled === false ? "false" : "true";
+      document.getElementById("cfgSuperTitle").value = cfg.supermarket_title || "";
+      document.getElementById("cfgSuperPlaceholder").value = cfg.supermarket_placeholder || "";
+      document.getElementById("cfgPharmaMedTitle").value = cfg.pharmacy_med_title || "";
+      document.getElementById("cfgPharmaOtherTitle").value = cfg.pharmacy_other_title || "";
     }
 
     async function saveSettings() {
@@ -2221,6 +2267,24 @@ ADMIN_HTML = """<!DOCTYPE html>
       const data = await res.json();
       if (!res.ok) { setMsg(data.error || "خطأ في حفظ الإعدادات"); return; }
       setMsg("تم حفظ إعدادات الواتساب وعرض أول طلب مجاناً.");
+      refreshAll();
+    }
+
+    async function saveSectionLabels() {
+      const payload = {
+        supermarket_title: document.getElementById("cfgSuperTitle").value.trim(),
+        supermarket_placeholder: document.getElementById("cfgSuperPlaceholder").value.trim(),
+        pharmacy_med_title: document.getElementById("cfgPharmaMedTitle").value.trim(),
+        pharmacy_other_title: document.getElementById("cfgPharmaOtherTitle").value.trim(),
+      };
+      const res = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) { setMsg(data.error || "خطأ في حفظ نصوص الأقسام"); return; }
+      setMsg("تم تحديث نصوص وعناوين السوبر ماركت والصيدليات بنجاح.");
       refreshAll();
     }
 
@@ -2562,6 +2626,16 @@ def update_admin_settings():
             settings["free_first_order_discount"] = disc
         except (TypeError, ValueError):
             return jsonify({"error": "قيمة الخصم غير صحيحة"}), 400
+
+    for text_key in (
+        "supermarket_title",
+        "supermarket_placeholder",
+        "pharmacy_med_title",
+        "pharmacy_other_title",
+        "pharmacy_other_placeholder",
+    ):
+        if text_key in payload and str(payload.get(text_key) or "").strip():
+            settings[text_key] = str(payload.get(text_key)).strip()
 
     data["settings"] = settings
     save_data(data)
@@ -3111,6 +3185,13 @@ def customer_me():
             "enabled": bool(settings.get("free_first_order_enabled", True)),
             "discount": int(settings.get("free_first_order_discount", FREE_FIRST_ORDER_DISCOUNT)),
             "label": str(settings.get("free_first_order_label") or "عرض أول طلب مجاناً"),
+        },
+        "sections": {
+            "supermarket_title": str(settings.get("supermarket_title") or DEFAULT_DATA["settings"]["supermarket_title"]),
+            "supermarket_placeholder": str(settings.get("supermarket_placeholder") or DEFAULT_DATA["settings"]["supermarket_placeholder"]),
+            "pharmacy_med_title": str(settings.get("pharmacy_med_title") or DEFAULT_DATA["settings"]["pharmacy_med_title"]),
+            "pharmacy_other_title": str(settings.get("pharmacy_other_title") or DEFAULT_DATA["settings"]["pharmacy_other_title"]),
+            "pharmacy_other_placeholder": str(settings.get("pharmacy_other_placeholder") or DEFAULT_DATA["settings"]["pharmacy_other_placeholder"]),
         },
     })
 
