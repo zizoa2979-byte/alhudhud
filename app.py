@@ -38,7 +38,7 @@ OTP_MAX_ATTEMPTS = 5
 FREE_FIRST_ORDER_DISCOUNT = int(os.environ.get("FREE_FIRST_ORDER_DISCOUNT", "35"))
 
 
-def _default_svg_data_uri(label, bg="#0f766e", fg="#ffffff"):
+def _default_svg_data_uri(label, bg="#f97316", fg="#ffffff"):
     safe_label = (
         str(label or "الهدهد")
         .replace("&", "&amp;")
@@ -49,20 +49,20 @@ def _default_svg_data_uri(label, bg="#0f766e", fg="#ffffff"):
     svg = (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="400" height="240" viewBox="0 0 400 240">'
         f'<rect width="400" height="240" rx="18" fill="{bg}"/>'
-        f'<circle cx="330" cy="48" r="70" fill="rgba(255,255,255,0.08)"/>'
+        f'<circle cx="330" cy="48" r="70" fill="rgba(255,255,255,0.12)"/>'
         f'<text x="200" y="112" text-anchor="middle" fill="{fg}" font-family="Tahoma,Arial,sans-serif" font-size="22" font-weight="bold">{safe_label}</text>'
-        f'<text x="200" y="146" text-anchor="middle" fill="rgba(255,255,255,0.85)" font-family="Tahoma,Arial,sans-serif" font-size="14">الهدهد • نبروه والقرى</text>'
+        f'<text x="200" y="146" text-anchor="middle" fill="rgba(255,255,255,0.9)" font-family="Tahoma,Arial,sans-serif" font-size="14">الهدهد • نبروه والقرى</text>'
         f"</svg>"
     )
     return "data:image/svg+xml;charset=utf-8," + quote(svg)
 
 
 FOOTER_BLOCK = f"""
-<footer style="text-align: center; padding: 20px 12px 84px; margin-top: 28px; font-size: 13px; color: #64748b; border-top: 1px solid rgba(148, 163, 184, 0.25); direction: rtl;">
+<footer style="text-align: center; padding: 20px 12px 86px; margin-top: 28px; font-size: 13px; color: #64748b; border-top: 1px solid rgba(148, 163, 184, 0.25); direction: rtl;">
   <div>تم تصميم الموقع بواسطة <strong>{OWNER_NAME}</strong></div>
   <div style="margin-top: 6px;">
     للتواصل: <strong>{OWNER_PHONE}</strong> |
-    <a href="{OWNER_WHATSAPP}" target="_blank" rel="noopener noreferrer" style="color: #16a34a; font-weight: bold; text-decoration: none;">
+    <a href="{OWNER_WHATSAPP}" target="_blank" rel="noopener noreferrer" style="color: #ea580c; font-weight: bold; text-decoration: none;">
       واتساب
     </a>
   </div>
@@ -85,7 +85,7 @@ DEFAULT_DATA = {
             "phone": "01000000001",
             "pin": "",
             "status": "approved",
-            "image": _default_svg_data_uri("مطعم الهدهد", "#0f766e"),
+            "image": _default_svg_data_uri("مطعم الهدهد", "#f97316"),
         },
         {
             "id": 2,
@@ -95,7 +95,7 @@ DEFAULT_DATA = {
             "phone": "01000000002",
             "pin": "",
             "status": "approved",
-            "image": _default_svg_data_uri("متجر الرياضة", "#0369a1"),
+            "image": _default_svg_data_uri("متجر الرياضة", "#6366f1"),
         },
     ],
     "products": [
@@ -107,7 +107,7 @@ DEFAULT_DATA = {
             "price": 450,
             "approved": True,
             "available": True,
-            "image": _default_svg_data_uri("كورة أديداس", "#0284c7"),
+            "image": _default_svg_data_uri("كورة أديداس", "#6366f1"),
         },
         {
             "id": 2,
@@ -117,7 +117,7 @@ DEFAULT_DATA = {
             "price": 55,
             "approved": True,
             "available": True,
-            "image": _default_svg_data_uri("مياه معدنية", "#0d9488"),
+            "image": _default_svg_data_uri("مياه معدنية", "#0ea5e9"),
         },
         {
             "id": 3,
@@ -127,7 +127,7 @@ DEFAULT_DATA = {
             "price": 140,
             "approved": True,
             "available": True,
-            "image": _default_svg_data_uri("وجبة فراخ مشوية", "#b45309"),
+            "image": _default_svg_data_uri("وجبة فراخ مشوية", "#f97316"),
         },
     ],
     "zones": [
@@ -340,80 +340,100 @@ CUSTOMER_HTML = """<!DOCTYPE html>
   <title>الهدهد | توصيل نبروه والقرى المحيطة</title>
   <style>
     * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
-    body { margin: 0; background: #f1f5f9; color: #0f172a; padding-bottom: 84px; }
-    header { background: linear-gradient(135deg, #0f766e, #115e59); color: #fff; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 25; box-shadow: 0 4px 14px rgba(15,23,42,0.12); }
+    body { margin: 0; background: linear-gradient(180deg, #fff7ed 0%, #fdf4ff 45%, #f0f9ff 100%); color: #1e1b4b; padding-bottom: 88px; min-height: 100vh; }
+    header { background: linear-gradient(120deg, #f97316, #ec4899, #6366f1); color: #fff; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 25; box-shadow: 0 6px 20px rgba(99, 102, 241, 0.22); }
     header h1 { margin: 0; font-size: 20px; display: flex; align-items: center; gap: 8px; }
-    .live-dot { width: 9px; height: 9px; border-radius: 999px; background: #4ade80; box-shadow: 0 0 0 4px rgba(74,222,128,0.25); animation: pulseDot 1.8s infinite; }
-    @keyframes pulseDot { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.25); opacity: 0.7; } }
-    header .sub { font-size: 12px; opacity: 0.92; }
+    .live-dot { width: 9px; height: 9px; border-radius: 999px; background: #fde047; box-shadow: 0 0 0 4px rgba(253,224,71,0.35); animation: pulseDot 1.8s infinite; }
+    @keyframes pulseDot { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.25); opacity: 0.75; } }
+    header .sub { font-size: 12px; opacity: 0.95; }
     .hdr-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .hdr-pill { background: rgba(255,255,255,0.16); color: #fff; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: bold; }
-    header a { color: #fff; background: rgba(15,23,42,0.22); text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; transition: transform 0.15s ease, background 0.15s ease; }
-    header a:hover { background: rgba(15,23,42,0.35); transform: translateY(-1px); }
-    .promo-banner { max-width: 1120px; margin: 14px auto 0; padding: 0 12px; }
-    .promo-box { background: linear-gradient(135deg, #0f766e, #0284c7); color: #fff; border-radius: 14px; padding: 13px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; box-shadow: 0 6px 18px rgba(2,132,199,0.18); transition: transform 0.2s ease; }
-    .promo-box:hover { transform: translateY(-2px); }
+    .hdr-pill { background: rgba(255,255,255,0.22); color: #fff; padding: 6px 11px; border-radius: 999px; font-size: 12px; font-weight: bold; }
+    header a { color: #fff; background: rgba(30, 27, 75, 0.28); text-decoration: none; padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: bold; transition: transform 0.15s ease, background 0.15s ease; }
+    header a:hover { background: rgba(30, 27, 75, 0.42); transform: translateY(-1px); }
+
+    /* شريط تتبع الأوردر الثابت بالخط والنقاط في الأعلى */
+    .live-tracker-strip { max-width: 1120px; margin: 12px auto 0; padding: 0 12px; display: none; }
+    .live-tracker-strip.show { display: block; }
+    .tracker-banner-card { background: #ffffff; border: 2px solid #f97316; border-radius: 16px; padding: 14px 16px; box-shadow: 0 8px 22px rgba(249, 115, 22, 0.14); }
+    .tracker-top-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .tracker-code-pill { background: #ffedd5; color: #c2410c; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: bold; }
+    .dot-line-track { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding-top: 8px; margin: 8px 0; }
+    .dot-line-track::before { content: ""; position: absolute; top: 15px; left: 12%; right: 12%; height: 3px; background: #e2e8f0; z-index: 1; }
+    .dot-step { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 5px; }
+    .dot-circle { width: 16px; height: 16px; border-radius: 999px; background: #cbd5e1; border: 3px solid #fff; box-shadow: 0 0 0 2px #cbd5e1; transition: all 0.2s ease; }
+    .dot-step.done .dot-circle { background: #10b981; box-shadow: 0 0 0 2px #10b981; }
+    .dot-step.current .dot-circle { background: #f97316; box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.28); transform: scale(1.15); }
+    .dot-label { font-size: 11px; font-weight: bold; color: #64748b; }
+    .dot-step.done .dot-label { color: #047857; }
+    .dot-step.current .dot-label { color: #c2410c; }
+    .tracker-bottom-meta { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #fed7aa; font-size: 12px; color: #334155; }
+
+    .promo-banner { max-width: 1120px; margin: 12px auto 0; padding: 0 12px; }
+    .promo-box { background: linear-gradient(120deg, #ec4899, #8b5cf6, #0ea5e9); color: #fff; border-radius: 16px; padding: 13px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.2); }
     .container { max-width: 1120px; margin: 14px auto; padding: 0 12px; }
-    .card { background: #fff; border-radius: 14px; padding: 15px; box-shadow: 0 4px 14px rgba(15,23,42,0.05); margin-bottom: 14px; border: 1px solid #e2e8f0; }
-    h2 { margin: 0 0 12px; font-size: 17px; color: #0f766e; }
+    .card { background: #ffffff; border-radius: 16px; padding: 16px; box-shadow: 0 6px 20px rgba(30, 27, 75, 0.06); margin-bottom: 14px; border: 1px solid #f1e8ff; }
+    h2 { margin: 0 0 12px; font-size: 17px; color: #db2777; }
+    h3 { margin: 0 0 8px; font-size: 15px; color: #4f46e5; }
     .search-row { margin-bottom: 12px; }
     .rest-strip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px; }
-    .rest-chip { min-width: 178px; border: 1px solid #cbd5e1; border-radius: 12px; padding: 9px; background: #f8fafc; color: #0f172a; cursor: pointer; display: flex; gap: 8px; align-items: center; text-align: right; transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease; }
-    .rest-chip:hover { transform: translateY(-2px); border-color: #0d9488; }
-    .rest-chip:active { transform: scale(0.97); }
-    .rest-chip.active { border-color: #0d9488; background: #f0fdfa; box-shadow: 0 4px 12px rgba(13,148,136,0.16); }
+    .rest-chip { min-width: 178px; border: 1px solid #e9d5ff; border-radius: 14px; padding: 9px; background: #faf5ff; color: #1e1b4b; cursor: pointer; display: flex; gap: 8px; align-items: center; text-align: right; transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease; }
+    .rest-chip:hover { transform: translateY(-2px); border-color: #ec4899; }
+    .rest-chip.active { border-color: #ec4899; background: #fdf2f8; box-shadow: 0 4px 14px rgba(236, 72, 153, 0.18); }
     .rest-chip img { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
-    .grid-prods { display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 11px; }
-    .prod { border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; background: #ffffff; transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
-    .prod:hover { transform: translateY(-3px); box-shadow: 0 8px 18px rgba(15,23,42,0.08); border-color: #99f6e4; }
-    .prod-img { width: 100%; height: 118px; object-fit: cover; border-radius: 10px; background: #e2e8f0; }
-    .store { font-size: 11px; color: #0f766e; font-weight: bold; }
+    .grid-prods { display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); gap: 12px; }
+    .prod { border: 1px solid #f3e8ff; border-radius: 14px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; background: #ffffff; transition: transform 0.18s ease, box-shadow 0.18s ease; }
+    .prod:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.1); }
+    .prod-img { width: 100%; height: 118px; object-fit: cover; border-radius: 10px; background: #f1f5f9; }
+    .store { font-size: 11px; color: #7c3aed; font-weight: bold; }
     .name { font-size: 14px; font-weight: bold; }
-    .price { font-size: 15px; color: #0369a1; font-weight: bold; }
-    button { border: none; border-radius: 9px; padding: 8px 12px; cursor: pointer; font-weight: bold; font-size: 13px; transition: transform 0.14s ease, filter 0.14s ease; }
+    .price { font-size: 15px; color: #ea580c; font-weight: bold; }
+    button { border: none; border-radius: 10px; padding: 8px 12px; cursor: pointer; font-weight: bold; font-size: 13px; transition: transform 0.14s ease, filter 0.14s ease; }
     button:active { transform: scale(0.96); }
-    .btn-primary { background: #0d9488; color: #fff; width: 100%; }
-    .btn-primary:hover { filter: brightness(1.06); }
+    .btn-primary { background: linear-gradient(120deg, #f97316, #ec4899); color: #fff; width: 100%; }
     .btn-wa { background: #16a34a; color: #fff; width: 100%; margin-top: 8px; }
-    .btn-blue { background: #0284c7; color: #fff; }
-    .btn-sm { padding: 5px 9px; font-size: 12px; background: #e2e8f0; color: #0f172a; }
-    label { display: block; font-size: 12px; font-weight: bold; margin: 8px 0 4px; }
-    input, select, textarea { width: 100%; padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 9px; font-size: 13px; background: #fff; color: #0f172a; }
-    .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; gap: 6px; }
-    .total-box { margin-top: 10px; padding-top: 10px; border-top: 2px solid #e2e8f0; font-size: 14px; font-weight: bold; }
+    .btn-blue { background: linear-gradient(120deg, #6366f1, #0ea5e9); color: #fff; }
+    .btn-pink { background: linear-gradient(120deg, #ec4899, #8b5cf6); color: #fff; }
+    .btn-amber { background: linear-gradient(120deg, #f59e0b, #f97316); color: #fff; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; background: #ede9fe; color: #4c1d95; }
+    label { display: block; font-size: 12px; font-weight: bold; margin: 8px 0 4px; color: #312e81; }
+    input, select, textarea { width: 100%; padding: 9px 11px; border: 1px solid #ddd6fe; border-radius: 10px; font-size: 13px; background: #fff; color: #1e1b4b; }
+
+    /* صناديق الأقسام الخاصة: سوبر ماركت، صيدليات، ومنتجات إضافية */
+    .special-box { border-radius: 14px; padding: 13px; margin-top: 12px; border: 1px solid #e2e8f0; }
+    .box-super { background: #f0fdf4; border-color: #bbf7d0; }
+    .box-pharma { background: #fdf2f8; border-color: #fbcfe8; }
+    .box-extra { background: #fefce8; border-color: #fef08a; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 680px) { .two-col { grid-template-columns: 1fr; } }
+    .mini-thumb { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; border: 1px solid #cbd5e1; }
+
+    .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; gap: 8px; flex-wrap: wrap; }
+    .total-box { margin-top: 12px; padding-top: 10px; border-top: 2px solid #ede9fe; font-size: 14px; font-weight: bold; color: #312e81; }
     .alert { margin-top: 8px; padding: 10px 12px; border-radius: 10px; font-size: 13px; font-weight: bold; }
     .alert-ok { background: #dcfce7; color: #166534; }
     .alert-err { background: #fee2e2; color: #991b1b; }
-    .track-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-top: 10px; background: #f8fafc; font-size: 13px; }
-    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: bold; background: #ccfbf1; color: #0f766e; }
+    .track-card { border: 1px solid #e9d5ff; border-radius: 14px; padding: 12px; margin-top: 10px; background: #faf5ff; font-size: 13px; }
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: bold; background: #fae8ff; color: #86198f; }
 
-    /* شريط مراحل الأوردر التفاعلي */
-    .stepper { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 10px 0; }
-    @media (max-width: 640px) { .stepper { grid-template-columns: repeat(2, 1fr); } }
-    .step-node { padding: 6px 8px; border-radius: 8px; font-size: 11px; font-weight: bold; text-align: center; background: #e2e8f0; color: #475569; border: 1px solid transparent; }
-    .step-node.done { background: #dcfce7; color: #166534; border-color: #86efac; }
-    .step-node.current { background: #0d9488; color: #fff; box-shadow: 0 3px 10px rgba(13,148,136,0.25); }
+    .reward-card { background: linear-gradient(120deg, #fdf2f8, #eef2ff); border: 1px solid #fbcfe8; border-radius: 14px; padding: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 
-    /* بطاقة مكافأة تفاعلية */
-    .reward-card { background: linear-gradient(120deg, #f0fdfa, #e0f2fe); border: 1px solid #99f6e4; border-radius: 12px; padding: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-top: 1px solid #cbd5e1; display: grid; grid-template-columns: repeat(5, 1fr); z-index: 40; box-shadow: 0 -4px 14px rgba(15,23,42,0.08); }
-    .nav-tab { background: transparent; border-radius: 0; padding: 10px 2px; color: #475569; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 2px; transition: transform 0.15s ease, color 0.15s ease; }
-    .nav-tab.active { color: #0f766e; background: #f0fdfa; border-top: 3px solid #0d9488; }
-    .nav-tab.bump { transform: scale(1.12); color: #16a34a; }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-top: 1px solid #e9d5ff; display: grid; grid-template-columns: repeat(5, 1fr); z-index: 40; box-shadow: 0 -4px 16px rgba(99, 102, 241, 0.12); }
+    .nav-tab { background: transparent; border-radius: 0; padding: 10px 2px; color: #64748b; font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 2px; transition: transform 0.15s ease, color 0.15s ease; }
+    .nav-tab.active { color: #db2777; background: #fdf2f8; border-top: 3px solid #ec4899; }
+    .nav-tab.bump { transform: scale(1.12); color: #f97316; }
     .tab-pane { display: none; }
-    .tab-pane.active { display: block; animation: fadeIn 0.22s ease; }
+    .tab-pane.active { display: block; animation: fadeIn 0.2s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
     .setting-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
 
     /* مربع تأكيد الإضافة للسلة في منتصف الشاشة */
     .cart-toast-backdrop { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 90; pointer-events: none; padding: 16px; }
     .cart-toast-backdrop.show { display: flex; }
-    .cart-toast-box { background: rgba(15, 23, 42, 0.94); color: #ffffff; border-radius: 18px; padding: 18px 22px; min-width: 215px; max-width: 300px; text-align: center; box-shadow: 0 14px 34px rgba(15, 23, 42, 0.3); transform: scale(0.82); opacity: 0; transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 0.2s ease; }
+    .cart-toast-box { background: rgba(30, 27, 75, 0.95); color: #ffffff; border-radius: 18px; padding: 18px 22px; min-width: 215px; max-width: 300px; text-align: center; box-shadow: 0 14px 34px rgba(30, 27, 75, 0.32); transform: scale(0.82); opacity: 0; transition: transform 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2), opacity 0.2s ease; }
     .cart-toast-backdrop.show .cart-toast-box { transform: scale(1); opacity: 1; }
-    .check-circle { width: 54px; height: 54px; border-radius: 999px; background: #16a34a; color: #ffffff; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 28px; font-weight: bold; box-shadow: 0 0 0 7px rgba(22, 163, 74, 0.22); }
+    .check-circle { width: 54px; height: 54px; border-radius: 999px; background: #10b981; color: #ffffff; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 28px; font-weight: bold; box-shadow: 0 0 0 7px rgba(16, 185, 129, 0.24); }
     .cart-toast-title { font-size: 14px; font-weight: bold; }
-    .cart-toast-sub { font-size: 12px; color: #cbd5e1; margin-top: 4px; }
+    .cart-toast-sub { font-size: 12px; color: #e2e8f0; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -429,6 +449,11 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     </div>
   </header>
 
+  <!-- شريط تتبع الأوردر التلقائي بالخط والنقاط (يظهر تلقائياً ويحفظ في المتصفح) -->
+  <div id="liveTrackerStrip" class="live-tracker-strip">
+    <div id="liveTrackerContent" class="tracker-banner-card"></div>
+  </div>
+
   <div id="cartToast" class="cart-toast-backdrop" aria-live="polite">
     <div class="cart-toast-box">
       <div class="check-circle">&#10003;</div>
@@ -440,7 +465,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
   <div class="promo-banner">
     <div id="promoBox" class="promo-box">
       <div><strong>عرض أول طلب مجاناً:</strong> متاح للعملاء الجدد عند تأكيد رقم التليفون عبر واتساب.</div>
-      <button type="button" class="btn-sm" style="background:#fff; color:#0f766e;" onclick="switchTab('account')">تفعيل الحساب الآن</button>
+      <button type="button" class="btn-sm" style="background:#fff; color:#db2777;" onclick="switchTab('account')">تفعيل الحساب الآن</button>
     </div>
   </div>
 
@@ -462,7 +487,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
         <h2>تتبع الأوردر وطلباتي</h2>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <input type="text" id="trackQuery" placeholder="اكتب رقم التليفون أو رقم الأوردر (مثال: HD-1001)" style="flex:1; min-width:200px;" />
-          <button type="button" class="btn-blue" onclick="trackOrders()">تتبع الآن</button>
+          <button type="button" class="btn-blue" onclick="trackOrders(true)">تتبع وحفظ الأوردر</button>
         </div>
         <div id="trackResults"></div>
       </div>
@@ -474,6 +499,64 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       <div class="card">
         <h2>سلة الطلب وتحديد البلد</h2>
         <div id="cartBox">السلة فارغة حالياً.</div>
+
+        <!-- 1. قسم السوبر ماركت: يكتب العميل اسم المنتج ويحط صورة لو حابب -->
+        <div class="special-box box-super">
+          <h3>قسم السوبر ماركت (اكتب اسم المنتج وأرفق صورة إن وجدت)</h3>
+          <div class="two-col">
+            <div>
+              <label for="superProdName">اسم منتج السوبر ماركت</label>
+              <input type="text" id="superProdName" placeholder="مثال: لبن جهينة / زيت / بسكويت..." />
+            </div>
+            <div>
+              <label for="superProdFile">صورة المنتج (اختياري)</label>
+              <input type="file" id="superProdFile" accept="image/*" onchange="handleCustomImage(this, 'superProdImg')" />
+              <input type="hidden" id="superProdImg" />
+            </div>
+          </div>
+          <div style="margin-top:8px;">
+            <button type="button" class="btn-blue" onclick="addCustomSupermarketItem()">إضافة منتج السوبر ماركت للسلة</button>
+          </div>
+        </div>
+
+        <!-- 2. قسم الصيدليات: علاج + تركيز + مستحضرات تجميل ومنتجات أخرى من الصيدلية -->
+        <div class="special-box box-pharma">
+          <h3>قسم الصيدليات (علاج وتركيز + مستحضرات تجميل ومنتجات أخرى)</h3>
+          <div class="two-col">
+            <div>
+              <label for="medName">اسم العلاج / الدواء</label>
+              <input type="text" id="medName" placeholder="مثال: بنادول / أوجمنتين..." />
+            </div>
+            <div>
+              <label for="medDosage">التركيز</label>
+              <input type="text" id="medDosage" placeholder="مثال: 500mg / 1g / شراب..." />
+            </div>
+          </div>
+          <label for="medFile">صورة الروشتة أو علبة الدواء (اختياري)</label>
+          <input type="file" id="medFile" accept="image/*" onchange="handleCustomImage(this, 'medImg')" />
+          <input type="hidden" id="medImg" />
+          <div style="margin-top:8px;">
+            <button type="button" class="btn-pink" onclick="addPharmacyMedicineItem()">إضافة العلاج والتركيز للسلة</button>
+          </div>
+
+          <hr style="margin:12px 0; border:none; border-top:1px dashed #f472b6;" />
+
+          <label for="cosmeticOtherName">مستحضرات تجميل ومنتجات أخرى من الصيدلية (مزيل عرق، شامبو، عناية شخصية...)</label>
+          <input type="text" id="cosmeticOtherName" placeholder="اكتب المنتج اللي محتاجه غير العلاج..." />
+          <div style="margin-top:8px;">
+            <button type="button" class="btn-pink" onclick="addPharmacyOtherItem()">إضافة منتج صيدلية آخر للسلة</button>
+          </div>
+        </div>
+
+        <!-- 3. المنتجات الإضافية / طلب خاص -->
+        <div class="special-box box-extra">
+          <h3>منتجات إضافية / طلب خاص (مثل عيش من مخبز أو أي طلب غير موجود)</h3>
+          <label for="extraItemText">اكتب الطلب الإضافي بالتفصيل</label>
+          <input type="text" id="extraItemText" placeholder="مثال: 20 رغيف عيش بلدي من المخبز أو أي غرض إضافي..." />
+          <div style="margin-top:8px;">
+            <button type="button" class="btn-amber" onclick="addExtraCustomItem()">إضافة الطلب الإضافي للسلة</button>
+          </div>
+        </div>
 
         <label for="zoneSelect">البلد / القرية (توصيل نبروه والقرى)</label>
         <select id="zoneSelect" onchange="renderCart()"></select>
@@ -518,7 +601,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
 
         <div class="reward-card">
           <div>
-            <strong style="color:#0f766e;">بطاقة مكافأة العميل الجديد</strong>
+            <strong style="color:#db2777;">بطاقة مكافأة العميل الجديد</strong>
             <div id="rewardCardText" style="font-size:12px; color:#334155; margin-top:2px;">أكّد رقمك على واتساب لتفعيل خصم أول طلب.</div>
           </div>
           <span id="rewardChip" class="badge">جاهز للتفعيل</span>
@@ -607,6 +690,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
 
   <script>
     const STEPS = ["تم استلام الطلب", "جاري التجهيز", "خرج مع الطيار", "تم التوصيل"];
+    const TRACK_STORAGE_KEY = "hudhud_tracked_order_code";
     let restaurants = [];
     let products = [];
     let zones = [];
@@ -616,6 +700,8 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     let lastWaUrl = "";
     let toastTimer = null;
     const cart = {};
+    const customCartItems = [];
+    let nextCustomSeq = 1;
 
     function showAddedToast(itemName, qtyInCart) {
       const backdrop = document.getElementById("cartToast");
@@ -638,6 +724,175 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       }
     }
 
+    function handleCustomImage(fileInput, hiddenId) {
+      const file = fileInput.files && fileInput.files[0];
+      const hiddenEl = document.getElementById(hiddenId);
+      if (!file) {
+        hiddenEl.value = "";
+        return;
+      }
+      if (file.size > 2_000_000) {
+        alert("حجم الصورة كبير، اختر صورة أصغر من 2 ميجابايت.");
+        fileInput.value = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        hiddenEl.value = ev.target.result || "";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function pushCustomItem(itemObj) {
+      customCartItems.push(itemObj);
+      renderCart();
+      const totalItems = getTotalCartCount();
+      showAddedToast(itemObj.name, totalItems);
+    }
+
+    function addCustomSupermarketItem() {
+      const name = document.getElementById("superProdName").value.trim();
+      const img = document.getElementById("superProdImg").value.trim();
+      if (!name) {
+        alert("اكتب اسم منتج السوبر ماركت أولاً.");
+        return;
+      }
+      pushCustomItem({
+        cid: "c_" + (nextCustomSeq++),
+        name: `سوبر ماركت: ${name}`,
+        store: "سوبر ماركت (طلب بالاسم)",
+        restaurant_id: null,
+        price: 0,
+        qty: 1,
+        image: img,
+      });
+      document.getElementById("superProdName").value = "";
+      document.getElementById("superProdFile").value = "";
+      document.getElementById("superProdImg").value = "";
+    }
+
+    function addPharmacyMedicineItem() {
+      const med = document.getElementById("medName").value.trim();
+      const dosage = document.getElementById("medDosage").value.trim();
+      const img = document.getElementById("medImg").value.trim();
+      if (!med) {
+        alert("اكتب اسم العلاج أولاً.");
+        return;
+      }
+      const label = dosage ? `علاج: ${med} (تركيز: ${dosage})` : `علاج: ${med}`;
+      pushCustomItem({
+        cid: "c_" + (nextCustomSeq++),
+        name: label,
+        store: "صيدلية • أدوية",
+        restaurant_id: null,
+        price: 0,
+        qty: 1,
+        image: img,
+      });
+      document.getElementById("medName").value = "";
+      document.getElementById("medDosage").value = "";
+      document.getElementById("medFile").value = "";
+      document.getElementById("medImg").value = "";
+    }
+
+    function addPharmacyOtherItem() {
+      const txt = document.getElementById("cosmeticOtherName").value.trim();
+      if (!txt) {
+        alert("اكتب مستحضر التجميل أو منتج الصيدلية الآخر أولاً.");
+        return;
+      }
+      pushCustomItem({
+        cid: "c_" + (nextCustomSeq++),
+        name: `صيدلية (مستحضرات تجميل ومنتجات أخرى): ${txt}`,
+        store: "صيدلية • عناية ومنتجات أخرى",
+        restaurant_id: null,
+        price: 0,
+        qty: 1,
+        image: "",
+      });
+      document.getElementById("cosmeticOtherName").value = "";
+    }
+
+    function addExtraCustomItem() {
+      const txt = document.getElementById("extraItemText").value.trim();
+      if (!txt) {
+        alert("اكتب المنتج الإضافي أو الطلب الخاص أولاً.");
+        return;
+      }
+      pushCustomItem({
+        cid: "c_" + (nextCustomSeq++),
+        name: `إضافي: ${txt}`,
+        store: "منتجات إضافية / طلب خاص",
+        restaurant_id: null,
+        price: 0,
+        qty: 1,
+        image: "",
+      });
+      document.getElementById("extraItemText").value = "";
+    }
+
+    function removeCustomItem(cid) {
+      const idx = customCartItems.findIndex(x => x.cid === cid);
+      if (idx >= 0) {
+        customCartItems.splice(idx, 1);
+        renderCart();
+      }
+    }
+
+    function getTotalCartCount() {
+      const catalogQty = Object.values(cart).reduce((a, b) => a + Number(b || 0), 0);
+      const customQty = customCartItems.reduce((a, b) => a + Number(b.qty || 1), 0);
+      return catalogQty + customQty;
+    }
+
+    function renderDotTracker(status) {
+      const idx = STEPS.indexOf(status);
+      return `<div class="dot-line-track">` + STEPS.map((st, i) => {
+        let cls = "dot-step";
+        if (idx >= 0 && i < idx) cls += " done";
+        else if (i === idx) cls += " current";
+        return `
+          <div class="${cls}">
+            <div class="dot-circle"></div>
+            <div class="dot-label">${esc(st)}</div>
+          </div>
+        `;
+      }).join("") + `</div>`;
+    }
+
+    async function refreshSavedTopTracker() {
+      const savedCode = (localStorage.getItem(TRACK_STORAGE_KEY) || "").trim();
+      const strip = document.getElementById("liveTrackerStrip");
+      const box = document.getElementById("liveTrackerContent");
+      if (!savedCode) {
+        strip.classList.remove("show");
+        return;
+      }
+      const res = await fetch(`/api/orders/track?q=${encodeURIComponent(savedCode)}`);
+      const list = await res.json();
+      if (!Array.isArray(list) || !list.length) {
+        strip.classList.remove("show");
+        return;
+      }
+      const o = list[0];
+      strip.classList.add("show");
+      box.innerHTML = `
+        <div class="tracker-top-row">
+          <div>
+            <strong>تتبع أوردرك الحالي</strong>
+            <span class="tracker-code-pill">#${esc(o.order_code)}</span>
+          </div>
+          <span class="badge">${esc(o.status)}</span>
+        </div>
+        ${renderDotTracker(o.status)}
+        <div class="tracker-bottom-meta">
+          <span>المكان: <strong>${esc(o.zone_name)}</strong></span>
+          <span>الطيار: <strong>${esc(o.courier_name || "بانتظار التعيين")}</strong></span>
+          <span>الإجمالي: <strong>${o.total} ج.م</strong></span>
+        </div>
+      `;
+    }
+
     function switchTab(tabName) {
       ["store", "cart", "orders", "account", "settings"].forEach(name => {
         document.getElementById(`tab-${name}`).classList.toggle("active", name === tabName);
@@ -648,8 +903,8 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       }
       if (tabName === "orders") {
         const inp = document.getElementById("myOrdersPhone");
-        if (!inp.value && currentCustomer && currentCustomer.phone) {
-          inp.value = currentCustomer.phone;
+        if (!inp.value) {
+          inp.value = localStorage.getItem(TRACK_STORAGE_KEY) || (currentCustomer && currentCustomer.phone) || "";
         }
         loadMyOrders();
       }
@@ -657,9 +912,8 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     }
 
     function updateCartBadge() {
-      const totalQty = Object.values(cart).reduce((a, b) => a + Number(b || 0), 0);
       const el = document.getElementById("bottomCartCount");
-      if (el) el.textContent = totalQty;
+      if (el) el.textContent = getTotalCartCount();
     }
 
     function saveLocalPrefs() {
@@ -726,7 +980,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       if (promoInfo.enabled) {
         promoBox.innerHTML = `
           <div><strong>${esc(promoInfo.label)}:</strong> خصم ${promoInfo.discount} ج.م على أول طلب لعميل جديد بعد تأكيد رقمه على واتساب.</div>
-          <button type="button" class="btn-sm" style="background:#fff; color:#0f766e;" onclick="switchTab('account')">تفعيل الحساب الآن</button>
+          <button type="button" class="btn-sm" style="background:#fff; color:#db2777;" onclick="switchTab('account')">تفعيل الحساب الآن</button>
         `;
         document.getElementById("settingsPromoBadge").textContent = `مفعل (${promoInfo.discount} ج.م)`;
         document.getElementById("settingsPromoDesc").textContent = `خصم ${promoInfo.discount} ج.م على أول طلب مؤكد لرقم هاتف جديد.`;
@@ -742,6 +996,13 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       renderRestaurants();
       renderProducts();
       renderCart();
+
+      const savedCode = (localStorage.getItem(TRACK_STORAGE_KEY) || "").trim();
+      if (savedCode) {
+        document.getElementById("trackQuery").value = savedCode;
+        await refreshSavedTopTracker();
+        await renderOrdersInto(savedCode, document.getElementById("trackResults"));
+      }
     }
 
     function renderRestaurants() {
@@ -807,7 +1068,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       cart[id] = (cart[id] || 0) + 1;
       updateCartBadge();
       const prod = products.find(p => Number(p.id) === Number(id));
-      showAddedToast(prod ? prod.name : "", cart[id]);
+      showAddedToast(prod ? prod.name : "", getTotalCartCount());
     }
 
     function changeQty(id, delta) {
@@ -819,6 +1080,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
 
     function clearCart() {
       Object.keys(cart).forEach(k => delete cart[k]);
+      customCartItems.length = 0;
       renderCart();
     }
 
@@ -841,31 +1103,47 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       const box = document.getElementById("cartBox");
       const ids = Object.keys(cart);
       let subtotal = 0;
+      let html = "";
 
-      if (!ids.length) {
+      if (ids.length) {
+        html += ids.map(id => {
+          const item = products.find(p => p.id === Number(id));
+          if (!item) return "";
+          const qty = cart[id];
+          const line = item.price * qty;
+          subtotal += line;
+          return `
+            <div class="cart-item">
+              <span>${esc(item.name)} (${esc(item.store)}) × ${qty}</span>
+              <span>
+                <button type="button" class="btn-sm" onclick="changeQty(${item.id}, -1)">-</button>
+                <button type="button" class="btn-sm" onclick="changeQty(${item.id}, 1)">+</button>
+                <strong>${line} ج.م</strong>
+              </span>
+            </div>
+          `;
+        }).join("");
+      }
+
+      if (customCartItems.length) {
+        html += customCartItems.map(ci => `
+          <div class="cart-item">
+            <span style="display:flex; align-items:center; gap:8px;">
+              ${ci.image ? `<img class="mini-thumb" src="${escAttr(ci.image)}" alt="" />` : ""}
+              <span><strong>${esc(ci.name)}</strong> <span style="color:#64748b; font-size:11px;">(${esc(ci.store)})</span></span>
+            </span>
+            <button type="button" class="btn-sm" style="background:#fee2e2; color:#991b1b;" onclick="removeCustomItem('${escAttr(ci.cid)}')">حذف</button>
+          </div>
+        `).join("");
+      }
+
+      if (!html) {
         box.innerHTML = "السلة فارغة حالياً.";
         document.getElementById("totalBox").textContent = "الإجمالي: 0 ج.م";
         return;
       }
 
-      box.innerHTML = ids.map(id => {
-        const item = products.find(p => p.id === Number(id));
-        if (!item) return "";
-        const qty = cart[id];
-        const line = item.price * qty;
-        subtotal += line;
-        return `
-          <div class="cart-item">
-            <span>${esc(item.name)} (${esc(item.store)}) × ${qty}</span>
-            <span>
-              <button type="button" class="btn-sm" onclick="changeQty(${item.id}, -1)">-</button>
-              <button type="button" class="btn-sm" onclick="changeQty(${item.id}, 1)">+</button>
-              <strong>${line} ج.م</strong>
-            </span>
-          </div>
-        `;
-      }).join("");
-
+      box.innerHTML = html;
       const zone = getSelectedZone();
       const fee = Number(zone.fee || 0);
       const disc = estimateDiscount(subtotal);
@@ -929,8 +1207,8 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     async function submitOrder() {
       const alertBox = document.getElementById("orderAlert");
       const ids = Object.keys(cart);
-      if (!ids.length) {
-        alertBox.innerHTML = '<div class="alert alert-err">أضف منتجاً واحداً على الأقل للسلة.</div>';
+      if (!ids.length && !customCartItems.length) {
+        alertBox.innerHTML = '<div class="alert alert-err">أضف منتجاً أو طلباً واحداً على الأقل للسلة.</div>';
         return;
       }
 
@@ -944,10 +1222,20 @@ CUSTOMER_HTML = """<!DOCTYPE html>
         return;
       }
 
-      const items = ids.map(id => {
+      const catalogItems = ids.map(id => {
         const p = products.find(x => x.id === Number(id));
         return p ? { id: p.id, restaurant_id: p.restaurant_id, name: p.name, store: p.store, price: p.price, qty: cart[id] } : null;
       }).filter(Boolean);
+
+      const extraMapped = customCartItems.map(ci => ({
+        name: ci.name,
+        store: ci.store,
+        restaurant_id: ci.restaurant_id,
+        price: 0,
+        qty: ci.qty || 1,
+      }));
+
+      const items = [...catalogItems, ...extraMapped];
 
       const res = await fetch("/api/orders", {
         method: "POST",
@@ -973,30 +1261,23 @@ CUSTOMER_HTML = """<!DOCTYPE html>
         applyCustomerToForm();
       }
 
+      localStorage.setItem(TRACK_STORAGE_KEY, data.order.order_code);
+      await refreshSavedTopTracker();
+
       const discLine = data.order.discount > 0 ? `<br/>خصم أول طلب: -${data.order.discount} ج.م` : "";
       alertBox.innerHTML = `
         <div class="alert alert-ok">
-          تم تسجيل طلبك برقم تتبع: <strong>${esc(data.order.order_code)}</strong><br/>
-          المطعم: <strong>${esc(data.order.restaurant_name || "المطعم")}</strong> — الحالة الحالية: ${esc(data.order.status)} — الإجمالي: ${data.order.total} ج.م${discLine}
+          تم تسجيل طلبك وحفظ تتبعه تلقائياً برقم: <strong>${esc(data.order.order_code)}</strong><br/>
+          الجهة: <strong>${esc(data.order.restaurant_name || "طلب الهدهد")}</strong> — الحالة الحالية: ${esc(data.order.status)} — الإجمالي: ${data.order.total} ج.م${discLine}
           <button type="button" class="btn-wa" onclick="window.open(lastWaUrl, '_blank')">إرسال التفاصيل على واتساب</button>
         </div>
       `;
       document.getElementById("trackQuery").value = data.order.order_code;
-      trackOrders();
+      trackOrders(true);
     }
 
     function normalize_js_phone(p) {
       return String(p || "").replace(/\\D+/g, "");
-    }
-
-    function renderStepper(status) {
-      const idx = STEPS.indexOf(status);
-      return `<div class="stepper">` + STEPS.map((st, i) => {
-        let cls = "step-node";
-        if (idx >= 0 && i < idx) cls += " done";
-        else if (i === idx) cls += " current";
-        return `<div class="${cls}">${esc(st)}</div>`;
-      }).join("") + `</div>`;
     }
 
     async function renderOrdersInto(q, resBox) {
@@ -1016,16 +1297,20 @@ CUSTOMER_HTML = """<!DOCTYPE html>
             <strong>طلب #${esc(o.order_code)} (${esc(o.restaurant_name || "")})</strong>
             <span class="badge">${esc(o.status)}</span>
           </div>
-          ${renderStepper(o.status)}
+          ${renderDotTracker(o.status)}
           <div style="margin-top:4px;">البلد: <strong>${esc(o.zone_name)}</strong> — الإجمالي: <strong>${o.total} ج.م</strong> ${o.discount ? `(خصم ${o.discount} ج.م)` : ""}</div>
           <div>الطيار: <strong>${esc(o.courier_name || "لم يُعيّن بعد")}</strong> ${o.courier_phone ? `(${esc(o.courier_phone)})` : ""}</div>
-          <div style="color:#475569; font-size:12px; margin-top:4px;">${o.items.map(i => `${esc(i.name)} ×${i.qty}`).join(" ، ")}</div>
+          <div style="color:#475569; font-size:12px; margin-top:4px;">${o.items.map(i => `${esc(i.name)}${i.qty > 1 ? ` ×${i.qty}` : ""}`).join(" ، ")}</div>
         </div>
       `).join("");
     }
 
-    async function trackOrders() {
+    async function trackOrders(saveCode = false) {
       const q = document.getElementById("trackQuery").value.trim();
+      if (saveCode && q) {
+        localStorage.setItem(TRACK_STORAGE_KEY, q);
+      }
+      await refreshSavedTopTracker();
       await renderOrdersInto(q, document.getElementById("trackResults"));
     }
 
@@ -1057,28 +1342,28 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
   <title>بوابة المطاعم وإدارة الطلبات | الهدهد</title>
   <style>
     * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
-    body { margin: 0; background: #f1f5f9 !important; color: #0f172a !important; }
-    header { background: #0f766e !important; color: #fff !important; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    body { margin: 0; background: #fff7ed !important; color: #1e1b4b !important; }
+    header { background: linear-gradient(120deg, #f97316, #ec4899, #6366f1) !important; color: #fff !important; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     header h1 { margin: 0; font-size: 19px; color: #fff !important; }
-    header a { color: #fff !important; background: #115e59 !important; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; }
+    header a { color: #fff !important; background: rgba(30,27,75,0.28) !important; text-decoration: none; padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: bold; }
     .wrap { max-width: 1180px; margin: 18px auto; padding: 0 12px; }
-    .card { background: #ffffff !important; color: #0f172a !important; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; border: 1px solid #cbd5e1; }
-    h2 { margin: 0 0 10px; font-size: 17px; color: #0f766e !important; }
-    label { display: block; font-size: 12px; font-weight: bold; margin: 10px 0 4px; color: #0f172a !important; }
-    input, select { width: 100%; padding: 9px 10px; border: 1px solid #94a3b8; border-radius: 8px; font-size: 13px; background: #ffffff !important; color: #0f172a !important; }
+    .card { background: #ffffff !important; color: #1e1b4b !important; border-radius: 16px; padding: 16px; box-shadow: 0 6px 20px rgba(30,27,75,0.06); margin-bottom: 16px; border: 1px solid #f1e8ff; }
+    h2 { margin: 0 0 10px; font-size: 17px; color: #db2777 !important; }
+    label { display: block; font-size: 12px; font-weight: bold; margin: 10px 0 4px; color: #312e81 !important; }
+    input, select { width: 100%; padding: 9px 10px; border: 1px solid #ddd6fe; border-radius: 10px; font-size: 13px; background: #ffffff !important; color: #1e1b4b !important; }
     .row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     @media (max-width: 720px) { .row-grid { grid-template-columns: 1fr; } }
-    button { border: none; border-radius: 8px; padding: 9px 13px; cursor: pointer; font-weight: bold; font-size: 12px; }
-    .btn-teal { background: #0d9488 !important; color: #fff !important; }
-    .btn-blue { background: #0284c7 !important; color: #fff !important; }
+    button { border: none; border-radius: 10px; padding: 9px 13px; cursor: pointer; font-weight: bold; font-size: 12px; }
+    .btn-teal { background: linear-gradient(120deg, #f97316, #ec4899) !important; color: #fff !important; }
+    .btn-blue { background: #6366f1 !important; color: #fff !important; }
     .btn-red { background: #dc2626 !important; color: #fff !important; }
     .btn-amber { background: #d97706 !important; color: #fff !important; }
     .btn-green { background: #16a34a !important; color: #fff !important; }
     .btn-gray { background: #475569 !important; color: #fff !important; }
     .preview-img { width: 96px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 6px; display: none; }
-    .prod-item { border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 10px; background: #f8fafc !important; color: #0f172a !important; }
+    .prod-item { border: 1px solid #f1e8ff; border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 10px; background: #faf5ff !important; color: #1e1b4b !important; }
     .prod-item img { width: 64px; height: 50px; object-fit: cover; border-radius: 6px; }
-    .alert { margin-top: 10px; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; }
+    .alert { margin-top: 10px; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: bold; }
     .alert-ok { background: #dcfce7 !important; color: #166534 !important; }
     .alert-err { background: #fee2e2 !important; color: #991b1b !important; }
     .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: bold; background: #fef3c7 !important; color: #92400e !important; }
@@ -1086,14 +1371,14 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
     .badge.no { background: #fee2e2 !important; color: #991b1b !important; }
     .badge.info { background: #e0f2fe !important; color: #075985 !important; }
     .sub-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
-    .sub-tab { background: #e2e8f0 !important; color: #0f172a !important; padding: 10px 14px; border-radius: 8px; font-size: 13px; }
-    .sub-tab.active { background: #0f766e !important; color: #fff !important; }
-    .order-box { border: 1px solid #cbd5e1; border-radius: 12px; padding: 14px; margin-top: 12px; background: #f8fafc !important; }
-    .order-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
+    .sub-tab { background: #ede9fe !important; color: #4c1d95 !important; padding: 10px 14px; border-radius: 10px; font-size: 13px; }
+    .sub-tab.active { background: #db2777 !important; color: #fff !important; }
+    .order-box { border: 1px solid #e9d5ff; border-radius: 14px; padding: 14px; margin-top: 12px; background: #faf5ff !important; }
+    .order-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #e9d5ff; }
     .step-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
     @media (max-width: 720px) { .step-slots { grid-template-columns: 1fr; } }
-    .slot-card { border: 1px dashed #94a3b8; border-radius: 8px; padding: 10px; background: #ffffff !important; }
-    .slot-card.done { border-style: solid; border-color: #16a34a; background: #f0fdf4 !important; }
+    .slot-card { border: 1px dashed #c4b5fd; border-radius: 10px; padding: 10px; background: #ffffff !important; }
+    .slot-card.done { border-style: solid; border-color: #10b981; background: #f0fdf4 !important; }
     .slot-title { font-size: 12px; font-weight: bold; color: #334155; margin-bottom: 6px; }
   </style>
 </head>
@@ -1159,7 +1444,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
         <input type="hidden" id="regLogoData" />
         <img id="regLogoPreview" class="preview-img" alt="معاينة لوجو المطعم" />
 
-        <hr style="margin:16px 0; border:none; border-top:1px solid #cbd5e1;" />
+        <hr style="margin:16px 0; border:none; border-top:1px solid #e9d5ff;" />
 
         <h2>إضافة منتجات المطعم بصورها من الجهاز</h2>
         <div class="row-grid">
@@ -1192,7 +1477,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
     </div>
 
     <div id="portalDashboard" class="card" style="display:none;">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding-bottom:12px; border-bottom:1px solid #cbd5e1;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; padding-bottom:12px; border-bottom:1px solid #e9d5ff;">
         <div>
           <h2 id="dashRestName" style="margin:0; font-size:22px;">اسم المطعم</h2>
           <div id="dashRestInfo" style="font-size:13px; color:#334155; margin-top:4px;"></div>
@@ -1212,7 +1497,7 @@ RESTAURANT_PORTAL_HTML = """<!DOCTYPE html>
       </div>
 
       <div id="rpane-products">
-        <div id="addMoreProdSection" style="padding:12px; border:1px solid #cbd5e1; border-radius:10px; background:#f8fafc;">
+        <div id="addMoreProdSection" style="padding:12px; border:1px solid #e9d5ff; border-radius:12px; background:#faf5ff;">
           <h2>إضافة منتج جديد للمطعم</h2>
           <div class="row-grid">
             <div>
@@ -1682,30 +1967,30 @@ ADMIN_HTML = """<!DOCTYPE html>
   <title>إدارة الهدهد | الطلبات والمطاعم والطيارين والبلاد</title>
   <style>
     * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
-    body { margin: 0; background: #f1f5f9; color: #0f172a; }
-    header { background: #0f766e; color: #fff; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    body { margin: 0; background: #fff7ed; color: #1e1b4b; }
+    header { background: linear-gradient(120deg, #f97316, #ec4899, #6366f1); color: #fff; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     header h1 { margin: 0; font-size: 19px; }
-    header a { color: #fff; background: #115e59; text-decoration: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; }
+    header a { color: #fff; background: rgba(30,27,75,0.28); text-decoration: none; padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: bold; }
     .wrap { max-width: 1160px; margin: 18px auto; padding: 0 12px; }
-    .card { background: #fff; border-radius: 12px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 16px; }
-    h2 { margin: 0 0 10px; font-size: 17px; color: #0f766e; }
+    .card { background: #fff; border-radius: 16px; padding: 15px; box-shadow: 0 6px 20px rgba(30,27,75,0.06); margin-bottom: 16px; border: 1px solid #f1e8ff; }
+    h2 { margin: 0 0 10px; font-size: 17px; color: #db2777; }
     .row-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    input, select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; background: #fff; color: #0f172a; }
-    button { border: none; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: bold; font-size: 12px; }
-    .btn-teal { background: #0d9488; color: #fff; }
-    .btn-blue { background: #0284c7; color: #fff; }
+    input, select { padding: 8px 10px; border: 1px solid #ddd6fe; border-radius: 10px; font-size: 13px; background: #fff; color: #1e1b4b; }
+    button { border: none; border-radius: 10px; padding: 8px 12px; cursor: pointer; font-weight: bold; font-size: 12px; }
+    .btn-teal { background: linear-gradient(120deg, #f97316, #ec4899); color: #fff; }
+    .btn-blue { background: #6366f1; color: #fff; }
     .btn-red { background: #dc2626; color: #fff; }
     table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
     th, td { padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: right; vertical-align: middle; }
-    th { background: #f8fafc; }
-    .msg { font-size: 13px; font-weight: bold; margin-top: 8px; color: #0f766e; }
+    th { background: #faf5ff; }
+    .msg { font-size: 13px; font-weight: bold; margin-top: 8px; color: #db2777; }
     .thumb { width: 48px; height: 36px; object-fit: cover; border-radius: 6px; border: 1px solid #e2e8f0; }
     .preview-img { width: 72px; height: 52px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1; display: none; }
     .st-pill { padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: bold; }
     .st-pending { background: #fef3c7; color: #92400e; }
     .st-approved { background: #dcfce7; color: #166534; }
     .st-rejected { background: #fee2e2; color: #991b1b; }
-    .pin-box { background: #f0fdfa; border: 1px solid #99f6e4; color: #0f766e; padding: 3px 8px; border-radius: 6px; font-weight: bold; font-family: monospace; }
+    .pin-box { background: #fdf2f8; border: 1px solid #fbcfe8; color: #db2777; padding: 3px 8px; border-radius: 6px; font-weight: bold; font-family: monospace; }
   </style>
 </head>
 <body>
@@ -1958,7 +2243,7 @@ ADMIN_HTML = """<!DOCTYPE html>
 
         return `
           <tr>
-            <td><strong>${esc(o.order_code)}</strong><br/><span style="color:#0f766e;font-size:12px;">${esc(o.restaurant_name || "")}</span></td>
+            <td><strong>${esc(o.order_code)}</strong><br/><span style="color:#db2777;font-size:12px;">${esc(o.restaurant_name || "")}</span></td>
             <td>${esc(o.customer_name)}<br/><strong>${esc(o.phone)}</strong></td>
             <td><strong>${esc(o.zone_name)}</strong> (${o.delivery_fee || 0} ج.م)<br/>${esc(o.address)}</td>
             <td>${o.items.map(i => `${esc(i.name)} ×${i.qty}`).join(" ، ")}<br/><strong>${o.total} ج.م</strong> ${o.discount ? `(خصم ${o.discount})` : ""}</td>
@@ -2326,7 +2611,7 @@ def add_restaurant():
     raw_img = str(payload.get("image", "")).strip()
     if not name:
         return jsonify({"error": "أدخل اسم المطعم أو المتجر"}), 400
-    image = raw_img if is_valid_image_data(raw_img) else _default_svg_data_uri(name, "#0f766e")
+    image = raw_img if is_valid_image_data(raw_img) else _default_svg_data_uri(name, "#f97316")
 
     data = load_data()
     restaurants = data.get("restaurants", [])
@@ -2374,7 +2659,7 @@ def restaurant_register_once():
         }), 409
 
     next_id = max([int(x.get("id", 0)) for x in restaurants], default=0) + 1
-    image = raw_img if is_valid_image_data(raw_img) else _default_svg_data_uri(name, "#0f766e")
+    image = raw_img if is_valid_image_data(raw_img) else _default_svg_data_uri(name, "#f97316")
 
     rest_obj = {
         "id": next_id,
@@ -2401,7 +2686,7 @@ def restaurant_register_once():
                 continue
             if pname and pprice > 0:
                 p_raw_img = str(p.get("image", "")).strip()
-                p_img = p_raw_img if is_valid_image_data(p_raw_img) else _default_svg_data_uri(pname, "#b45309")
+                p_img = p_raw_img if is_valid_image_data(p_raw_img) else _default_svg_data_uri(pname, "#6366f1")
                 p_obj = {
                     "id": next_pid,
                     "restaurant_id": next_id,
@@ -2572,7 +2857,7 @@ def restaurant_add_product():
     if not name or price <= 0:
         return jsonify({"error": "أدخل اسم المنتج وسعراً أكبر من صفر"}), 400
 
-    image = raw_img if is_valid_image_data(raw_img) else _default_svg_data_uri(name, "#b45309")
+    image = raw_img if is_valid_image_data(raw_img) else _default_svg_data_uri(name, "#6366f1")
     products_list = data.get("products", [])
     next_pid = max([int(x.get("id", 0)) for x in products_list], default=0) + 1
     p_obj = {
@@ -2683,7 +2968,7 @@ def add_product():
     except (TypeError, ValueError):
         restaurant_id = None
 
-    image = raw_img if is_valid_image_data(raw_img) else _default_svg_data_uri(name, "#b45309")
+    image = raw_img if is_valid_image_data(raw_img) else _default_svg_data_uri(name, "#6366f1")
 
     data = load_data()
     next_id = max([int(x.get("id", 0)) for x in data["products"]], default=0) + 1
@@ -2983,7 +3268,7 @@ def create_order():
             qty = int(float(it.get("qty", 1)))
         except (TypeError, ValueError):
             continue
-        if name and price > 0 and qty > 0:
+        if name and price >= 0 and qty > 0:
             clean_items.append({
                 "name": name,
                 "price": price,
@@ -3007,7 +3292,7 @@ def create_order():
         if r_match:
             restaurant_name = r_match.get("name", "")
     if not restaurant_name:
-        restaurant_name = clean_items[0].get("store") or "مطعم الهدهد للمأكولات"
+        restaurant_name = clean_items[0].get("store") or "طلب الهدهد"
         r_by_store = next((r for r in data.get("restaurants", []) if r.get("name") == restaurant_name), None)
         if r_by_store:
             restaurant_id = r_by_store.get("id")
@@ -3070,7 +3355,7 @@ def create_order():
     disc_txt = f"خصم أول طلب مجاناً: -{discount} ج.م\n" if discount > 0 else ""
     wa_msg = (
         f"*طلب جديد - الهدهد ({order_code})*\n"
-        f"المطعم: {restaurant_name}\n"
+        f"الجهة: {restaurant_name}\n"
         f"العميل: {customer_name}\n"
         f"التليفون: {phone}\n"
         f"البلد: {zone_name}\n"
