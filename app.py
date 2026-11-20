@@ -397,15 +397,13 @@ CUSTOMER_HTML = """<!DOCTYPE html>
     .btn-wa { background: #16a34a; color: #fff; width: 100%; margin-top: 8px; }
     .btn-blue { background: linear-gradient(120deg, #6366f1, #0ea5e9); color: #fff; }
     .btn-pink { background: linear-gradient(120deg, #ec4899, #8b5cf6); color: #fff; }
-    .btn-amber { background: linear-gradient(120deg, #f59e0b, #f97316); color: #fff; }
     .btn-sm { padding: 5px 10px; font-size: 12px; background: #ede9fe; color: #4c1d95; }
     label { display: block; font-size: 12px; font-weight: bold; margin: 8px 0 4px; color: #312e81; }
     input, select, textarea { width: 100%; padding: 9px 11px; border: 1px solid #ddd6fe; border-radius: 10px; font-size: 13px; background: #fff; color: #1e1b4b; }
 
-    .special-box { border-radius: 14px; padding: 13px; margin-top: 12px; border: 1px solid #e2e8f0; }
-    .box-super { background: #f0fdf4; border-color: #bbf7d0; }
-    .box-pharma { background: #fdf2f8; border-color: #fbcfe8; }
-    .box-extra { background: #fefce8; border-color: #fef08a; }
+    .special-box { border-radius: 14px; padding: 14px; margin-bottom: 14px; border: 1px solid #e2e8f0; }
+    .box-super { background: #f0fdf4; border-color: #86efac; }
+    .box-pharma { background: #fdf2f8; border-color: #f9a8d4; }
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     @media (max-width: 680px) { .two-col { grid-template-columns: 1fr; } }
     .mini-thumb { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; border: 1px solid #cbd5e1; }
@@ -420,10 +418,10 @@ CUSTOMER_HTML = """<!DOCTYPE html>
 
     .reward-card { background: linear-gradient(120deg, #fdf2f8, #eef2ff); border: 1px solid #fbcfe8; border-radius: 14px; padding: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 
-    /* الشريط السفلي بألوان وأيقونات مميزة لكل تبويب */
+    /* الشريط السفلي بألوان وأيقونات SVG واضحة لكل تبويب */
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-top: 2px solid #f1e8ff; display: grid; grid-template-columns: repeat(5, 1fr); z-index: 40; box-shadow: 0 -6px 20px rgba(30, 27, 75, 0.12); padding: 4px 4px 6px; gap: 3px; }
-    .nav-tab { background: #f8fafc; border-radius: 12px; padding: 7px 2px; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease; }
-    .nav-icon { font-size: 16px; line-height: 1.1; }
+    .nav-tab { background: #f8fafc; border-radius: 12px; padding: 6px 2px; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease; }
+    .nav-icon svg { width: 18px; height: 18px; display: block; }
     .nav-label { font-size: 10px; font-weight: bold; }
 
     .nav-store { color: #c2410c; background: #fff7ed; }
@@ -500,6 +498,57 @@ CUSTOMER_HTML = """<!DOCTYPE html>
         <div id="productsGrid" class="grid-prods"></div>
       </div>
 
+      <!-- قسم السوبر ماركت بره السلة مباشرة -->
+      <div class="card special-box box-super">
+        <h3 id="superTitleHeading">قسم السوبر ماركت (اكتب اللي محتاجه وأرفق صورة لو معاك)</h3>
+        <div class="two-col">
+          <div>
+            <label for="superProdName">الطلب / المنتج من السوبر ماركت</label>
+            <input type="text" id="superProdName" placeholder="مثال: لبن، زيت، بامبرز، سكر، أو أي غرض من السوبر ماركت..." />
+          </div>
+          <div>
+            <label for="superProdFile">إرفاق صورة للمنتج (اختياري)</label>
+            <input type="file" id="superProdFile" accept="image/*" onchange="handleCustomImage(this, 'superProdImg')" />
+            <input type="hidden" id="superProdImg" />
+          </div>
+        </div>
+        <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="btn-blue" onclick="addCustomSupermarketItem(false)">إضافة للطلب</button>
+          <button type="button" class="btn-primary" style="width:auto;" onclick="addCustomSupermarketItem(true)">إضافة والانتقال لإتمام الطلب</button>
+        </div>
+      </div>
+
+      <!-- قسم الصيدليات بره السلة مباشرة -->
+      <div class="card special-box box-pharma">
+        <h3 id="pharmaMedHeading">قسم الصيدليات — الأدوية والتركيز</h3>
+        <div class="two-col">
+          <div>
+            <label for="medName">اسم الدواء / العلاج</label>
+            <input type="text" id="medName" placeholder="مثال: بنادول / أوجمنتين..." />
+          </div>
+          <div>
+            <label for="medDosage">التركيز</label>
+            <input type="text" id="medDosage" placeholder="مثال: 500mg / 1g / شراب..." />
+          </div>
+        </div>
+        <label for="medFile">إضافة صورة للدواء أو الروشتة (اختياري)</label>
+        <input type="file" id="medFile" accept="image/*" onchange="handleCustomImage(this, 'medImg')" />
+        <input type="hidden" id="medImg" />
+        <div style="margin-top:8px;">
+          <button type="button" class="btn-pink" onclick="addPharmacyMedicineItem(false)">إضافة الدواء</button>
+          <button type="button" class="btn-blue" style="margin-right:6px;" onclick="addPharmacyMedicineItem(true)">إضافة والانتقال للإرسال</button>
+        </div>
+
+        <hr style="margin:14px 0; border:none; border-top:1px dashed #f472b6;" />
+
+        <label id="pharmaOtherLabel" for="cosmeticOtherName">حاجات الصيدلية غير العلاج (مستحضرات تجميل، بامبرز، عناية يومية...)</label>
+        <input type="text" id="cosmeticOtherName" placeholder="اكتب اسم الحاجة اللي محتاجها من الصيدلية غير العلاج..." />
+        <div style="margin-top:8px;">
+          <button type="button" class="btn-pink" onclick="addPharmacyOtherItem(false)">إضافة الحاجة</button>
+          <button type="button" class="btn-blue" style="margin-right:6px;" onclick="addPharmacyOtherItem(true)">إضافة والانتقال للإرسال</button>
+        </div>
+      </div>
+
       <div class="card">
         <h2>تتبع الأوردر وطلباتي</h2>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
@@ -516,54 +565,6 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       <div class="card">
         <h2>سلة الطلب وتحديد البلد</h2>
         <div id="cartBox">السلة فارغة حالياً.</div>
-
-        <!-- قسم السوبر ماركت الثابت والقابل للتعديل من الإدارة -->
-        <div class="special-box box-super">
-          <h3 id="superTitleHeading">قسم السوبر ماركت (اكتب اللي محتاجه وأرفق صورة لو معاك)</h3>
-          <div class="two-col">
-            <div>
-              <label for="superProdName">الطلب / المنتج من السوبر ماركت</label>
-              <input type="text" id="superProdName" placeholder="مثال: لبن، زيت، بامبرز، أو أي غرض من السوبر ماركت..." />
-            </div>
-            <div>
-              <label for="superProdFile">إرفاق صورة للمنتج (اختياري)</label>
-              <input type="file" id="superProdFile" accept="image/*" onchange="handleCustomImage(this, 'superProdImg')" />
-              <input type="hidden" id="superProdImg" />
-            </div>
-          </div>
-          <div style="margin-top:8px;">
-            <button type="button" class="btn-blue" onclick="addCustomSupermarketItem()">إضافة للسلة</button>
-          </div>
-        </div>
-
-        <!-- قسم الصيدليات الثابت والقابل للتعديل من الإدارة -->
-        <div class="special-box box-pharma">
-          <h3 id="pharmaMedHeading">قسم الصيدليات — الأدوية والتركيز</h3>
-          <div class="two-col">
-            <div>
-              <label for="medName">اسم الدواء / العلاج</label>
-              <input type="text" id="medName" placeholder="مثال: بنادول / أوجمنتين..." />
-            </div>
-            <div>
-              <label for="medDosage">التركيز</label>
-              <input type="text" id="medDosage" placeholder="مثال: 500mg / 1g / شراب..." />
-            </div>
-          </div>
-          <label for="medFile">إضافة صورة للدواء أو الروشتة (اختياري)</label>
-          <input type="file" id="medFile" accept="image/*" onchange="handleCustomImage(this, 'medImg')" />
-          <input type="hidden" id="medImg" />
-          <div style="margin-top:8px;">
-            <button type="button" class="btn-pink" onclick="addPharmacyMedicineItem()">إضافة الدواء للسلة</button>
-          </div>
-
-          <hr style="margin:12px 0; border:none; border-top:1px dashed #f472b6;" />
-
-          <label id="pharmaOtherLabel" for="cosmeticOtherName">حاجات الصيدلية غير العلاج (مستحضرات تجميل، بامبرز، عناية يومية...)</label>
-          <input type="text" id="cosmeticOtherName" placeholder="اكتب اسم الحاجة اللي محتاجها من الصيدلية غير العلاج..." />
-          <div style="margin-top:8px;">
-            <button type="button" class="btn-pink" onclick="addPharmacyOtherItem()">إضافة للسلة</button>
-          </div>
-        </div>
 
         <label for="zoneSelect">البلد / القرية (توصيل نبروه والقرى)</label>
         <select id="zoneSelect" onchange="renderCart()"></select>
@@ -679,23 +680,50 @@ CUSTOMER_HTML = """<!DOCTYPE html>
 
   <nav class="bottom-nav">
     <button type="button" id="tab-store" class="nav-tab nav-store active" onclick="switchTab('store')">
-      <span class="nav-icon">🏪</span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+      </span>
       <span class="nav-label">المتجر</span>
     </button>
     <button type="button" id="tab-cart" class="nav-tab nav-cart" onclick="switchTab('cart')">
-      <span class="nav-icon">🛒</span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+      </span>
       <span class="nav-label">السلة (<span id="bottomCartCount">0</span>)</span>
     </button>
     <button type="button" id="tab-orders" class="nav-tab nav-orders" onclick="switchTab('orders')">
-      <span class="nav-icon">📦</span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+          <line x1="12" y1="22.08" x2="12" y2="12"></line>
+        </svg>
+      </span>
       <span class="nav-label">طلباتي</span>
     </button>
     <button type="button" id="tab-account" class="nav-tab nav-account" onclick="switchTab('account')">
-      <span class="nav-icon">👤</span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </span>
       <span class="nav-label">الحساب</span>
     </button>
     <button type="button" id="tab-settings" class="nav-tab nav-settings" onclick="switchTab('settings')">
-      <span class="nav-icon">⚙️</span>
+      <span class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </span>
       <span class="nav-label">الإعدادات</span>
     </button>
   </nav>
@@ -755,13 +783,16 @@ CUSTOMER_HTML = """<!DOCTYPE html>
       reader.readAsDataURL(file);
     }
 
-    function pushCustomItem(itemObj) {
+    function pushCustomItem(itemObj, goCart = false) {
       customCartItems.push(itemObj);
       renderCart();
       showAddedToast(itemObj.name, getTotalCartCount());
+      if (goCart) {
+        switchTab("cart");
+      }
     }
 
-    function addCustomSupermarketItem() {
+    function addCustomSupermarketItem(goCart = false) {
       const name = document.getElementById("superProdName").value.trim();
       const img = document.getElementById("superProdImg").value.trim();
       if (!name) {
@@ -776,13 +807,13 @@ CUSTOMER_HTML = """<!DOCTYPE html>
         price: 0,
         qty: 1,
         image: img,
-      });
+      }, goCart);
       document.getElementById("superProdName").value = "";
       document.getElementById("superProdFile").value = "";
       document.getElementById("superProdImg").value = "";
     }
 
-    function addPharmacyMedicineItem() {
+    function addPharmacyMedicineItem(goCart = false) {
       const med = document.getElementById("medName").value.trim();
       const dosage = document.getElementById("medDosage").value.trim();
       const img = document.getElementById("medImg").value.trim();
@@ -799,14 +830,14 @@ CUSTOMER_HTML = """<!DOCTYPE html>
         price: 0,
         qty: 1,
         image: img,
-      });
+      }, goCart);
       document.getElementById("medName").value = "";
       document.getElementById("medDosage").value = "";
       document.getElementById("medFile").value = "";
       document.getElementById("medImg").value = "";
     }
 
-    function addPharmacyOtherItem() {
+    function addPharmacyOtherItem(goCart = false) {
       const txt = document.getElementById("cosmeticOtherName").value.trim();
       if (!txt) {
         alert("اكتب اسم الحاجة اللي محتاجها من الصيدلية أولاً.");
@@ -820,7 +851,7 @@ CUSTOMER_HTML = """<!DOCTYPE html>
         price: 0,
         qty: 1,
         image: "",
-      });
+      }, goCart);
       document.getElementById("cosmeticOtherName").value = "";
     }
 
